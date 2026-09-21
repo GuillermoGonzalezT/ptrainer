@@ -25,7 +25,8 @@ export function detallesPrescripcion(p: Prescripcion): string[] {
   if (p.carga_pct_1rm !== null) partes.push(`${numero.format(p.carga_pct_1rm)} % 1RM`)
   if (p.rpe !== null) partes.push(`RPE ${numero.format(p.rpe)}`)
   if (p.rir !== null) partes.push(`RIR ${p.rir}`)
-  if (p.tempo) partes.push(`tempo ${p.tempo}`)
+  // Guiones que no cortan la línea: "3-1-1" no se parte en dos renglones.
+  if (p.tempo) partes.push(`tempo ${p.tempo.replaceAll('-', '\u2011')}`)
   if (p.descanso_s !== null) partes.push(`descanso ${formatearDescanso(p.descanso_s)}`)
   return partes
 }

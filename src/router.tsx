@@ -1,5 +1,8 @@
 import { createHashRouter } from 'react-router'
 import { ConSesion, SoloCliente, SoloEntrenador, SoloSinSesion } from './auth/Guardias.tsx'
+import { DetalleSesion } from './entrenamiento/DetalleSesion.tsx'
+import { Entrenar } from './entrenamiento/Entrenar.tsx'
+import { Historial } from './entrenamiento/Historial.tsx'
 import { AuthLayout } from './layouts/AuthLayout.tsx'
 import { Inicio } from './pages/Inicio.tsx'
 import { NoEncontrada } from './pages/NoEncontrada.tsx'
@@ -49,6 +52,9 @@ export const router = createHashRouter([
       { path: 'ejercicios/:id', element: <DetalleEjercicio /> },
       // La rutina como la ve el cliente (RF-40); el entrenador también puede abrirla.
       { path: 'rutina/:id', element: <VistaRutina /> },
+      // Modo entrenamiento: el cliente, o el entrenador en su nombre (RF-45).
+      { path: 'entrenar/:id', element: <Entrenar /> },
+      { path: 'sesion/:id', element: <DetalleSesion /> },
       {
         element: <SoloEntrenador />,
         children: [
@@ -56,6 +62,7 @@ export const router = createHashRouter([
           { path: 'clientes/nuevo', element: <FormularioCliente /> },
           { path: 'clientes/:id', element: <FichaCliente /> },
           { path: 'clientes/:id/editar', element: <FormularioCliente /> },
+          { path: 'clientes/:id/sesiones', element: <Historial /> },
           { path: 'ejercicios', element: <ListaEjercicios /> },
           { path: 'ejercicios/nuevo', element: <FormularioEjercicio /> },
           { path: 'ejercicios/:id/editar', element: <FormularioEjercicio /> },
@@ -67,7 +74,10 @@ export const router = createHashRouter([
       },
       {
         element: <SoloCliente />,
-        children: [{ path: 'progreso', element: <Progreso /> }],
+        children: [
+          { path: 'historial', element: <Historial /> },
+          { path: 'progreso', element: <Progreso /> },
+        ],
       },
       { path: '*', element: <NoEncontrada /> },
     ],

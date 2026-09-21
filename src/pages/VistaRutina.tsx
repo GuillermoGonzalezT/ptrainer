@@ -9,7 +9,7 @@ import pantalla from '../styles/pantalla.module.css'
 import styles from './VistaRutina.module.css'
 
 // La rutina como la ve el cliente: qué hacer en cada ejercicio, y el video a
-// un toque (RF-23). El modo entrenamiento (RF-41) va a arrancar desde acá.
+// un toque (RF-23). Desde acá arranca el modo entrenamiento (RF-41).
 export function VistaRutina() {
   const { id = '' } = useParams()
   const { tipo } = useAuth()
@@ -53,6 +53,13 @@ export function VistaRutina() {
         })}
       </ol>
       {rutina.items.length === 0 && <p className={pantalla.textoApagado}>Esta rutina todavía no tiene ejercicios.</p>}
+      {rutina.items.length > 0 && rutina.cliente_id && (
+        <div className={styles.empezar}>
+          <Link to={`/entrenar/${rutina.id}`} className={pantalla.botonLink}>
+            {tipo === 'entrenador' ? 'Registrar una sesión' : 'Empezar entrenamiento'}
+          </Link>
+        </div>
+      )}
     </section>
   )
 }

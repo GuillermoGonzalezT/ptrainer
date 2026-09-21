@@ -244,6 +244,12 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
               Asignar a clientes
             </Link>
           )}
+          {!esPlantilla && rutina.items.length > 0 && (
+            // RF-45: el entrenador registra la sesión en una clase presencial.
+            <Link to={`/entrenar/${rutina.id}`} className={pantalla.botonLink}>
+              Registrar una sesión
+            </Link>
+          )}
           <Boton type="button" variante="secundario" onClick={alternarArchivo}>
             {rutina.archivada ? 'Sacar de archivadas' : 'Archivar'}
           </Boton>

@@ -19,6 +19,7 @@ import styles from '../../styles/pantalla.module.css'
 import { InvitacionCliente } from './InvitacionCliente.tsx'
 import { NotasCliente } from './NotasCliente.tsx'
 import { RutinasCliente } from './RutinasCliente.tsx'
+import { SesionesCliente } from './SesionesCliente.tsx'
 
 export function FichaCliente() {
   const { id = '' } = useParams()
@@ -57,6 +58,7 @@ export function FichaCliente() {
       />
       {!cliente.usuario_id && <InvitacionCliente clienteId={cliente.id} nombre={cliente.nombre} />}
       <RutinasCliente clienteId={cliente.id} />
+      <SesionesCliente clienteId={cliente.id} />
       <Datos cliente={cliente} />
       <Estado cliente={cliente} alCambiar={recargar} />
       <NotasCliente clienteId={cliente.id} />

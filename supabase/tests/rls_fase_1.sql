@@ -195,6 +195,37 @@ select prueba.falla(format($q$insert into public.sesiones (cliente_id, rutina_no
 select prueba.falla(format($q$insert into public.sesion_comentarios (sesion_id, texto) values (%L, 'Genial')$q$, :'s1'),
   'el cliente no escribe la devolución del entrenador');
 
+-- registrar_sesion: la sesión y sus series de una vez
+select gen_random_uuid() as s_nueva \gset
+select public.registrar_sesion(jsonb_build_object(
+  'id', :'s_nueva', 'cliente_id', :'c1', 'rutina_id', :'r1', 'rutina_nombre', 'Fuerza A',
+  'iniciada_en', '2026-09-22T10:00:00Z', 'finalizada_en', '2026-09-22T11:00:00Z', 'esfuerzo', 8, 'comentario', '  ',
+  'series', jsonb_build_array(
+    jsonb_build_object('ejercicio_id', :'ej1', 'rutina_ejercicio_id', gen_random_uuid(), 'orden_ejercicio', 1, 'numero', 1, 'peso_kg', 70, 'reps', 8),
+    jsonb_build_object('ejercicio_id', :'ej1', 'orden_ejercicio', 1, 'numero', 2, 'peso_kg', 72.5, 'reps', 6)
+  )
+)) as devuelta \gset
+select prueba.ok(:'devuelta' = :'s_nueva', 'registrar: devuelve el id de la sesión');
+select prueba.ok(prueba.filas(format('select 1 from public.sesion_series where sesion_id = %L', :'s_nueva')) = 2, 'registrar: guarda las series');
+select prueba.ok((select comentario is null and registrada_por = :'U1' from public.sesiones where id = :'s_nueva'),
+  'registrar: comentario vacío queda en null y registrada_por es quien llama');
+select prueba.ok((select count(*) from public.sesion_series where sesion_id = :'s_nueva' and rutina_ejercicio_id is null) = 2,
+  'registrar: un rutina_ejercicio_id que no existe se guarda sin vínculo');
+select public.registrar_sesion(jsonb_build_object('id', :'s_nueva', 'cliente_id', :'c1', 'rutina_nombre', 'X',
+  'series', jsonb_build_array(jsonb_build_object('ejercicio_id', :'ej1', 'orden_ejercicio', 1, 'numero', 1)))) as reintento \gset
+select prueba.ok(prueba.filas(format('select 1 from public.sesion_series where sesion_id = %L', :'s_nueva')) = 2,
+  'registrar: un reintento con el mismo id no duplica');
+select prueba.falla(format($q$select public.registrar_sesion('{"id": "%s", "cliente_id": "%s", "rutina_nombre": "X"}')$q$, gen_random_uuid(), :'c2'),
+  'registrar: no se registra para otro cliente');
+select prueba.falla(format($q$select public.registrar_sesion('{"id": "%s", "cliente_id": "%s", "rutina_nombre": "X", "series": [{"ejercicio_id": "%s", "orden_ejercicio": 1, "numero": 0}]}')$q$,
+  gen_random_uuid(), :'c1', :'ej1'), 'registrar: una serie inválida corta todo');
+select prueba.ok(prueba.filas(format('select 1 from public.sesiones where cliente_id = %L', :'c1')) = 2,
+  'registrar: si una serie falla, tampoco queda la sesión');
+
+-- ultima_vez: las series de la sesión más reciente con ese ejercicio
+select prueba.ok((select string_agg(peso_kg::float8::text || 'x' || reps, ' ' order by numero) from public.ultima_vez(:'c1', array[:'ej1']::uuid[])) = '70x8 72.5x6',
+  'ultima_vez: devuelve las series de la sesión más reciente');
+
 select prueba.falla(format($q$insert into public.mediciones (cliente_metrica_id, intentos, valor) values (%L, '{50}', 999)$q$, :'cm1'),
   'nadie manda el valor: lo calcula la base');
 insert into public.mediciones (cliente_metrica_id, intentos) values (:'cm1', '{50,48}') returning valor as v \gset
@@ -215,7 +246,7 @@ reset role;
 select prueba.como(:'E1');
 set role authenticated;
 
-select prueba.ok(prueba.filas('select 1 from public.sesiones') = 1, 'E1 ve la sesión de su cliente');
+select prueba.ok(prueba.filas('select 1 from public.sesiones') = 2, 'E1 ve las sesiones de su cliente');
 select prueba.ok(prueba.afectadas(format($q$insert into public.sesion_comentarios (sesion_id, texto) values (%L, 'Bien la técnica')$q$, :'s1')) = 1,
   'E1 deja su devolución');
 insert into public.sesiones (cliente_id, rutina_id, rutina_nombre) values (:'c1', :'r1', 'Fuerza A') returning registrada_por as rp \gset
@@ -281,6 +312,7 @@ select prueba.como(:'U2');
 set role authenticated;
 select public.aceptar_invitacion(:'inv2') as aceptada2 \gset
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'U2 no ve las sesiones de U1');
+select prueba.ok(prueba.filas(format('select 1 from public.ultima_vez(%L, array[%L]::uuid[])', :'c1', :'ej1')) = 0, 'U2 no ve la última vez de U1');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'un cliente no edita rutinas');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
@@ -312,7 +344,7 @@ select prueba.ok(prueba.filas('select 1 from storage.objects') = 0, 'storage: U1
 select prueba.falla(format($q$insert into public.sesiones (cliente_id, rutina_nombre) values (%L, 'X')$q$, :'c1'), 'U1 de baja no registra sesiones');
 
 reset role;
-select prueba.ok((select count(*) from public.sesiones where cliente_id = :'c1') = 2, 'la baja conserva el historial');
+select prueba.ok((select count(*) from public.sesiones where cliente_id = :'c1') = 3, 'la baja conserva el historial');
 
 -- Sin sesión iniciada (anon) -----------------------------------------------------------
 

@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Aviso, Boton } from '../components/Formulario.tsx'
 import { diaDeHoy, misRutinas, nombreDia, type RutinaEnLista } from '../datos/rutinas.ts'
+import { seriesHechas, sesionesSinTerminar } from '../entrenamiento/enCurso.ts'
 import { formatearDias } from '../lib/prescripcion.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import pantalla from '../styles/pantalla.module.css'
@@ -17,6 +18,10 @@ export function Hoy() {
   const libres = (rutinas ?? []).filter((r) => r.dias_semana.length === 0)
   const otras = (rutinas ?? []).filter((r) => r.dias_semana.length > 0 && !r.dias_semana.includes(hoy))
   const primerNombre = rol?.nombre.trim().split(' ')[0]
+  // Lo que quedó a medias en este teléfono (ver entrenamiento/enCurso.ts),
+  // solo de esta cuenta: el teléfono puede ser compartido.
+  const misFichas = new Set(rol?.fichas.map((f) => f.id))
+  const sinTerminar = sesionesSinTerminar().filter((s) => misFichas.has(s.clienteId))
 
   return (
     <section className={pantalla.pantalla}>
@@ -34,6 +39,15 @@ export function Hoy() {
         </>
       )}
       {cargando && !error && <p className={pantalla.textoApagado}>Cargando…</p>}
+
+      {sinTerminar.map((s) => (
+        <Link key={s.id} to={`/entrenar/${s.rutinaId}`} className={`${styles.tarjeta} ${styles.destacada}`}>
+          <span className={styles.tarjetaNombre}>Seguir: {s.rutinaNombre}</span>
+          <span className={styles.tarjetaDetalle}>
+            Entrenamiento sin terminar · {seriesHechas(s)} {seriesHechas(s) === 1 ? 'serie hecha' : 'series hechas'}
+          </span>
+        </Link>
+      ))}
 
       {rutinas && rutinas.length === 0 && (
         <div className={pantalla.vacio}>

@@ -718,6 +718,19 @@ export type Database = {
         Args: { p_ejercicios: Json; p_rutina_id: string }
         Returns: undefined
       }
+      registrar_sesion: { Args: { p_sesion: Json }; Returns: string }
+      ultima_vez: {
+        Args: { p_cliente_id: string; p_ejercicio_ids: string[] }
+        Returns: {
+          ejercicio_id: string
+          fecha: string
+          numero: number
+          peso_kg: number
+          reps: number
+          rpe: number
+          segundos: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

@@ -14,6 +14,7 @@ const pestanas: Record<'entrenador' | 'cliente', Pestana[]> = {
   ],
   cliente: [
     { to: '/', label: 'Hoy', end: true },
+    { to: '/historial', label: 'Historial' },
     { to: '/progreso', label: 'Progreso' },
   ],
 }

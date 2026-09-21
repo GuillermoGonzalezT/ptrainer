@@ -1,0 +1,310 @@
+.progreso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.puntos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+/* Cada punto es un ejercicio: tocarlo lleva a ese ejercicio. El área táctil
+   es más grande que el punto que se ve. */
+.punto {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.punto::after {
+  content: '';
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+
+.puntoHecho::after {
+  background: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+}
+
+.puntoActual::after {
+  inset: 6px;
+  background: var(--color-accent);
+}
+
+.punto:focus-visible {
+  outline: 2px solid var(--color-accent);
+  border-radius: 50%;
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.nombre {
+  font-size: 1.375rem;
+  overflow-wrap: anywhere;
+}
+
+.video {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.objetivo {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.objetivo span {
+  font-size: 0.9375rem;
+  font-weight: 400;
+}
+
+.notas {
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.9375rem;
+  white-space: pre-line;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.ultima {
+  font-size: 0.9375rem;
+}
+
+.series {
+  display: grid;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.titulo {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.numeroSerie {
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* 16px de letra: con menos, el iPhone hace zoom al tocar el campo. */
+.entrada {
+  width: 100%;
+  min-width: 0;
+  height: var(--tap-min);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.entrada:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.entradaHecha {
+  background: color-mix(in srgb, var(--color-accent) 8%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-accent) 35%, var(--color-border));
+}
+
+.entradaError {
+  border-color: var(--color-danger);
+}
+
+.marcar {
+  width: 100%;
+  height: var(--tap-min);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.marcada {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.marcar:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.errorSerie {
+  font-size: 0.875rem;
+  color: var(--color-danger);
+}
+
+.accionesSeries {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.accionChica {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.navegacion {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.terminarAntes {
+  align-self: center;
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* Barra de descanso: fija, justo arriba de las pestañas. */
+.descanso {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom));
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 60px;
+  padding: var(--space-2) var(--space-4);
+  overflow: hidden;
+  color: var(--color-on-accent);
+  background: var(--color-accent-strong);
+}
+
+.descansoBarra {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--color-accent);
+  transition: width 250ms linear;
+}
+
+.descansoTexto,
+.descansoBoton {
+  position: relative;
+}
+
+.descansoTexto {
+  flex: 1;
+  font-size: 1rem;
+}
+
+.descansoTexto strong {
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.descansoBoton {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  font-weight: 700;
+  color: inherit;
+  background: rgb(255 255 255 / 0.18);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.resumen {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.esfuerzo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.leyenda {
+  padding: 0;
+  margin-bottom: var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.escala {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+}
+
+.nivel {
+  min-height: var(--tap-min);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.nivelElegido {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
