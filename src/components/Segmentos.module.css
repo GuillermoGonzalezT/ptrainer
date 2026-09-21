@@ -1,0 +1,36 @@
+.segmentos {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-surface-2);
+  border-radius: var(--radius-md);
+}
+
+.opcion {
+  flex: 1;
+  min-height: 44px;
+  padding: 0 var(--space-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.elegida {
+  color: var(--color-text);
+  font-weight: 700;
+  background: var(--color-surface);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.opcion:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.opcion:disabled {
+  cursor: default;
+  opacity: 0.6;
+}

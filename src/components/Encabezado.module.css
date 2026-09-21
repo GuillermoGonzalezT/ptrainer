@@ -1,0 +1,31 @@
+.encabezado {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap-min);
+}
+
+.volver {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--tap-min);
+  height: var(--tap-min);
+  margin-left: calc(var(--space-3) * -1);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 50%;
+}
+
+.volver:focus-visible {
+  outline: 2px solid var(--color-accent);
+}
+
+.titulo {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.5rem;
+  overflow-wrap: anywhere;
+}

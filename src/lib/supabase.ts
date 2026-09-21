@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '../datos/database.types.ts'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
@@ -8,8 +9,8 @@ const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 //
 // flowType 'pkce': los links de los correos vuelven con `?code=…` antes del
 // hash, en vez de mandar la sesión en el hash, que es donde viven las rutas.
-export const supabase: SupabaseClient | null =
-  url && publishableKey ? createClient(url, publishableKey, { auth: { flowType: 'pkce' } }) : null
+export const supabase: SupabaseClient<Database> | null =
+  url && publishableKey ? createClient<Database>(url, publishableKey, { auth: { flowType: 'pkce' } }) : null
 
 export const isSupabaseConfigured = supabase !== null
 
