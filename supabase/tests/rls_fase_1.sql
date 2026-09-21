@@ -222,6 +222,29 @@ insert into public.sesiones (cliente_id, rutina_id, rutina_nombre) values (:'c1'
 select prueba.ok(:'rp' = :'E1', 'E1 registra una sesión presencial en nombre de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'E1 ve su perfil y el de su cliente vinculado');
 
+-- guardar_ejercicios_rutina: edita la plantilla de una vez
+select id as re_r1 from public.rutina_ejercicios where rutina_id = :'r1' \gset
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 3, 'segundos', 30),
+  jsonb_build_object('id', :'re1', 'ejercicio_id', :'ej1', 'series', 5, 'reps_min', 5),
+  -- id de un ejercicio de otra rutina (la copia de U1): se ignora
+  jsonb_build_object('id', :'re_r1', 'ejercicio_id', :'ej1', 'series', 9)
+));
+select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios where rutina_id = %L', :'plantilla')) = 2,
+  'guardar: agrega el nuevo y conserva el existente');
+select prueba.ok((select series from public.rutina_ejercicios where id = :'re1') = 5, 'guardar: actualiza el existente');
+select prueba.ok((select orden from public.rutina_ejercicios where id = :'re1') = 1, 'guardar: el orden sale de la posición');
+select prueba.ok((select series from public.rutina_ejercicios where id = :'re_r1') = 4, 'guardar: no toca ejercicios de otra rutina');
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('id', :'re1', 'ejercicio_id', :'ej1', 'series', 4, 'reps_min', 6, 'reps_max', 8)
+));
+select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios where rutina_id = %L', :'plantilla')) = 1,
+  'guardar: borra los que se quitaron');
+select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[{"ejercicio_id": "%s", "series": 0}]')$q$, :'plantilla', :'ej1'),
+  'guardar: respeta los checks (series 0)');
+select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios where rutina_id = %L', :'plantilla')) = 1,
+  'guardar: si algo falla no cambia nada');
+
 -- E2 no ve nada de E1 --------------------------------------------------------------
 
 reset role;
@@ -243,6 +266,7 @@ select prueba.ok(prueba.filas('select 1 from storage.objects') = 0, 'storage: E2
 select prueba.falla(format($q$insert into public.rutinas (entrenador_id, cliente_id, nombre) values (%L, %L, 'X')$q$, :'E2', :'c1'),
   'E2 no asigna rutinas a clientes de E1');
 select prueba.falla(format('select public.asignar_plantilla(%L, array[]::uuid[])', :'plantilla'), 'E2 no copia plantillas de E1');
+select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'E2 no edita rutinas de E1');
 insert into public.rutinas (entrenador_id, nombre) values (:'E2', 'Propia') returning id as r_e2 \gset
 select prueba.falla(format($q$insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series) values (%L, %L, 1, 3)$q$, :'r_e2', :'ej1'),
   'E2 no usa ejercicios de E1');
@@ -257,6 +281,7 @@ select prueba.como(:'U2');
 set role authenticated;
 select public.aceptar_invitacion(:'inv2') as aceptada2 \gset
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'U2 no ve las sesiones de U1');
+select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'un cliente no edita rutinas');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U2 ve los videos de su entrenador');

@@ -1,0 +1,66 @@
+.ejercicios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ejercicio {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.numero {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+  background: var(--color-surface-2);
+  border-radius: 50%;
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.nombre {
+  display: flex;
+  flex-direction: column;
+  font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.verVideo {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+}
+
+.volumen {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.notas {
+  padding: var(--space-2) var(--space-3);
+  font-size: 0.9375rem;
+  white-space: pre-line;
+  background: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+}

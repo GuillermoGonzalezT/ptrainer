@@ -714,6 +714,10 @@ export type Database = {
         Args: { p_cliente_ids: string[]; p_rutina_id: string }
         Returns: string[]
       }
+      guardar_ejercicios_rutina: {
+        Args: { p_ejercicios: Json; p_rutina_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

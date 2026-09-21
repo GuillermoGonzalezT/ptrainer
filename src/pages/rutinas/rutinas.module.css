@@ -1,0 +1,212 @@
+.encabezadoLista {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+}
+
+.encabezadoLista h2 {
+  font-size: 1.125rem;
+}
+
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.itemCabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-2) var(--space-3);
+  font: inherit;
+  color: var(--color-text);
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.itemCabecera:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.itemNumero {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+  background: var(--color-surface-2);
+  border-radius: 50%;
+}
+
+.itemTexto {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.itemNombre {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.itemResumen {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.itemFlecha {
+  color: var(--color-text-muted);
+}
+
+.itemCuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.fila2,
+.fila3 {
+  display: grid;
+  gap: var(--space-3);
+  align-items: start;
+}
+
+.fila2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.fila3 {
+  grid-template-columns: 1fr 1fr 1.3fr;
+}
+
+/* Los campos numéricos cortos no necesitan todo el ancho de la columna. */
+.fila2 input,
+.fila3 input {
+  min-width: 0;
+  width: 100%;
+}
+
+.casilla,
+.casillaCliente {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap-min);
+  cursor: pointer;
+}
+
+.casilla input,
+.casillaCliente input {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  accent-color: var(--color-accent);
+}
+
+.itemAcciones {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.accion,
+.quitar {
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.accion {
+  color: var(--color-accent-strong);
+}
+
+.accion:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.quitar {
+  margin-left: auto;
+  color: var(--color-danger);
+}
+
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.selectorCabecera {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-2);
+}
+
+.opcion {
+  width: 100%;
+  font: inherit;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+/* El botón de guardar queda a mano mientras se baja por una rutina larga,
+   justo arriba de la barra de pestañas. */
+.barraGuardar {
+  position: sticky;
+  bottom: calc(var(--tabbar-h) + env(safe-area-inset-bottom) + var(--space-2));
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  background: var(--color-bg);
+}
+
+.clientes {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.leyenda {
+  padding: 0 var(--space-1);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.casillaCliente + .casillaCliente {
+  border-top: 1px solid var(--color-border);
+}

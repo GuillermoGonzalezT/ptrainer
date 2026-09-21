@@ -5,7 +5,7 @@ import { Inicio } from './pages/Inicio.tsx'
 import { NoEncontrada } from './pages/NoEncontrada.tsx'
 import { Perfil } from './pages/Perfil.tsx'
 import { Progreso } from './pages/Progreso.tsx'
-import { Rutinas } from './pages/Rutinas.tsx'
+import { VistaRutina } from './pages/VistaRutina.tsx'
 import { Ingresar } from './pages/auth/Ingresar.tsx'
 import { Invitacion } from './pages/auth/Invitacion.tsx'
 import { NuevaContrasena } from './pages/auth/NuevaContrasena.tsx'
@@ -17,6 +17,9 @@ import { ListaClientes } from './pages/clientes/ListaClientes.tsx'
 import { DetalleEjercicio } from './pages/ejercicios/DetalleEjercicio.tsx'
 import { FormularioEjercicio } from './pages/ejercicios/FormularioEjercicio.tsx'
 import { ListaEjercicios } from './pages/ejercicios/ListaEjercicios.tsx'
+import { AsignarPlantilla } from './pages/rutinas/AsignarPlantilla.tsx'
+import { EditorRutina } from './pages/rutinas/EditorRutina.tsx'
+import { ListaRutinas } from './pages/rutinas/ListaRutinas.tsx'
 
 // Rutas por hash (#/clientes): funcionan en GitHub Pages y en Capacitor sin
 // configurar el servidor.
@@ -44,6 +47,8 @@ export const router = createHashRouter([
       { path: 'perfil', element: <Perfil /> },
       // El entrenador lo edita; el cliente lo ve desde su rutina (RF-23).
       { path: 'ejercicios/:id', element: <DetalleEjercicio /> },
+      // La rutina como la ve el cliente (RF-40); el entrenador también puede abrirla.
+      { path: 'rutina/:id', element: <VistaRutina /> },
       {
         element: <SoloEntrenador />,
         children: [
@@ -54,7 +59,10 @@ export const router = createHashRouter([
           { path: 'ejercicios', element: <ListaEjercicios /> },
           { path: 'ejercicios/nuevo', element: <FormularioEjercicio /> },
           { path: 'ejercicios/:id/editar', element: <FormularioEjercicio /> },
-          { path: 'rutinas', element: <Rutinas /> },
+          { path: 'rutinas', element: <ListaRutinas /> },
+          { path: 'rutinas/nueva', element: <EditorRutina /> },
+          { path: 'rutinas/:id', element: <EditorRutina /> },
+          { path: 'rutinas/:id/asignar', element: <AsignarPlantilla /> },
         ],
       },
       {

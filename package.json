@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "icons": "pwa-assets-generator",
-    "tipos": "supabase gen types typescript --linked --schema public > src/datos/database.types.ts"
+    "tipos": "node scripts/tipos.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.116.0",
