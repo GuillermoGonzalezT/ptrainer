@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
+import { Marca } from '../components/Marca.tsx'
 import styles from './AppLayout.module.css'
 
 type Pestana = { to: string; label: string; end?: boolean }
@@ -25,9 +26,13 @@ export function AppLayout({ tipo }: { tipo: 'entrenador' | 'cliente' }) {
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
-        <span className={styles.brand}>PTrainer</span>
-        <Link to="/perfil" className={styles.avatar} aria-label="Tu perfil">
-          {inicial}
+        <Link to="/" className={styles.inicio} aria-label="Ir al inicio">
+          <Marca tamano="chica" />
+        </Link>
+        <Link to="/perfil" className={styles.perfil} aria-label="Tu perfil">
+          <span className={styles.avatar} aria-hidden="true">
+            {inicial}
+          </span>
         </Link>
       </header>
 
