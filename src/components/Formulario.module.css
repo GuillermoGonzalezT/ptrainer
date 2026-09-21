@@ -1,0 +1,83 @@
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.etiqueta {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* 16px de letra: con menos, Safari en iPhone hace zoom al enfocar el campo. */
+.input {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-3);
+  font: inherit;
+  font-size: 1rem;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.ayuda {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.botonPrincipal,
+.botonSecundario {
+  min-height: var(--tap-min);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botonPrincipal {
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border: none;
+}
+
+.botonSecundario {
+  color: var(--color-accent-strong);
+  background: transparent;
+  border: 1px solid var(--color-border);
+}
+
+.botonPrincipal:disabled,
+.botonSecundario:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.botonPrincipal:focus-visible,
+.botonSecundario:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.avisoError,
+.avisoInfo {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 0.9375rem;
+}
+
+.avisoError {
+  color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 12%, transparent);
+}
+
+.avisoInfo {
+  color: var(--color-text);
+  background: var(--color-surface-2);
+}

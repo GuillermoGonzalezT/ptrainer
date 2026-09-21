@@ -1,0 +1,25 @@
+.perfil {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.perfil h1 {
+  font-size: 1.5rem;
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.datos dt {
+  color: var(--color-text-muted);
+}
+
+.datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

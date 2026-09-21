@@ -1,25 +1,45 @@
-import { NavLink, Outlet } from 'react-router'
+import { Link, NavLink, Outlet } from 'react-router'
+import { useAuth } from '../auth/useAuth.ts'
 import styles from './AppLayout.module.css'
 
-const tabs = [
-  { to: '/', label: 'Inicio', end: true },
-  { to: '/clientes', label: 'Clientes' },
-  { to: '/ejercicios', label: 'Ejercicios' },
-  { to: '/rutinas', label: 'Rutinas' },
-]
+type Pestana = { to: string; label: string; end?: boolean }
 
-export function AppLayout() {
+const pestanas: Record<'entrenador' | 'cliente', Pestana[]> = {
+  entrenador: [
+    { to: '/', label: 'Inicio', end: true },
+    { to: '/clientes', label: 'Clientes' },
+    { to: '/ejercicios', label: 'Ejercicios' },
+    { to: '/rutinas', label: 'Rutinas' },
+  ],
+  cliente: [
+    { to: '/', label: 'Hoy', end: true },
+    { to: '/progreso', label: 'Progreso' },
+  ],
+}
+
+export function AppLayout({ tipo }: { tipo: 'entrenador' | 'cliente' }) {
+  const { rol } = useAuth()
+  const tabs = pestanas[tipo]
+  const inicial = (rol?.nombre.trim()[0] ?? '?').toUpperCase()
+
   return (
     <div className={styles.shell}>
       <header className={styles.header}>
         <span className={styles.brand}>PTrainer</span>
+        <Link to="/perfil" className={styles.avatar} aria-label="Tu perfil">
+          {inicial}
+        </Link>
       </header>
 
       <main className={styles.main}>
         <Outlet />
       </main>
 
-      <nav className={styles.tabbar} aria-label="Secciones">
+      <nav
+        className={styles.tabbar}
+        style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}
+        aria-label="Secciones"
+      >
         {tabs.map((tab) => (
           <NavLink
             key={tab.to}

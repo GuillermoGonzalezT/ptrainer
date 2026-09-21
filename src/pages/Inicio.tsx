@@ -1,15 +1,8 @@
-import { PaginaProvisoria } from '../components/PaginaProvisoria.tsx'
-import { isSupabaseConfigured } from '../lib/supabase.ts'
+import { useAuth } from '../auth/useAuth.ts'
+import { Hoy } from './Hoy.tsx'
+import { InicioEntrenador } from './InicioEntrenador.tsx'
 
+// La misma ruta "/" muestra el panel al entrenador y "Hoy" al cliente.
 export function Inicio() {
-  return (
-    <PaginaProvisoria
-      titulo="Inicio"
-      descripcion={
-        isSupabaseConfigured
-          ? 'Acá va el panel del entrenador (RF-70) y la pantalla "Hoy" del cliente (RF-40).'
-          : 'Supabase todavía no está configurado: completá .env.local a partir de .env.example.'
-      }
-    />
-  )
+  return useAuth().tipo === 'entrenador' ? <InicioEntrenador /> : <Hoy />
 }
