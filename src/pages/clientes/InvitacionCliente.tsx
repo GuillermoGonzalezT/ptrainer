@@ -5,7 +5,7 @@ import { mensajeDeError } from '../../lib/errores.ts'
 import { formatearFecha } from '../../lib/formato.ts'
 import { urlDeLaApp } from '../../lib/supabase.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
-import styles from './clientes.module.css'
+import styles from '../../styles/pantalla.module.css'
 
 // RF-02. Solo se muestra mientras la ficha no tiene una cuenta vinculada.
 export function InvitacionCliente({ clienteId, nombre }: { clienteId: string; nombre: string }) {

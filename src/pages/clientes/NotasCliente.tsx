@@ -4,7 +4,7 @@ import { borrarNota, crearNota, listarNotas } from '../../datos/clientes.ts'
 import { mensajeDeError } from '../../lib/errores.ts'
 import { formatearFechaHora } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
-import styles from './clientes.module.css'
+import styles from '../../styles/pantalla.module.css'
 
 // RF-12. El cliente no las ve: la base no se las devuelve.
 export function NotasCliente({ clienteId }: { clienteId: string }) {

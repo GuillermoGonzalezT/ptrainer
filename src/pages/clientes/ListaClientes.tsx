@@ -6,7 +6,7 @@ import { Segmentos } from '../../components/Segmentos.tsx'
 import { etiquetaEstado, etiquetaModalidad, listarClientes, type Cliente, type EstadoCliente } from '../../datos/clientes.ts'
 import { normalizar } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
-import styles from './clientes.module.css'
+import styles from '../../styles/pantalla.module.css'
 
 type Filtro = EstadoCliente | 'todos'
 

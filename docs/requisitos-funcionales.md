@@ -63,7 +63,8 @@ Cada requisito indica su fase entre corchetes: **[F1]**, **[F2]** o **[F3]**.
 - **RF-22 [F1] Videos propios del entrenador.** El entrenador puede adjuntar a un ejercicio uno o más videos grabados por él:
   - Los graba con la cámara del teléfono desde la app o sube un archivo de la galería.
   - Los videos se guardan en Supabase Storage, no en YouTube ni en otro servicio externo.
-  - Duración máxima: 60 segundos por video (a confirmar, ver [P-02](#8-preguntas-abiertas)).
+  - Duración máxima: 30 segundos por video.
+  - Antes de subirlo, la app lo comprime en el teléfono a 720p (unos 8 MB por minuto).
   - Formatos aceptados: MP4 y MOV. Se rechaza cualquier otro tipo de archivo y cualquier archivo que supere el tamaño máximo.
   - Puede marcar uno como principal, reordenarlos y borrarlos.
 - **RF-23 [F1] Ver el video desde el cliente.** Desde la rutina, el cliente abre un ejercicio y reproduce los videos del entrenador en la misma pantalla, sin salir de la app. Solo pueden verlos los clientes de ese entrenador.
@@ -169,7 +170,7 @@ No hay cobro online en la app: los pagos se registran a mano.
 
 ## 8. Preguntas abiertas
 
-- **P-01 Espacio de Storage.** El plan gratis de Supabase trae 1 GB de almacenamiento y 5 GB de transferencia por mes. Un video de 60 s grabado con el teléfono pesa entre 20 y 100 MB, así que entran pocas decenas de videos, y cada vez que un cliente mira uno se consume transferencia. Opciones: comprimir el video en el teléfono antes de subirlo, bajar la resolución a 720p, pasar a Supabase Pro, o guardar los videos en otro servicio (por ejemplo, Cloudflare R2, sin costo de transferencia). Hay que decidirlo antes de construir RF-22.
-- **P-02 Duración máxima de los videos.** Propuesta: 60 segundos. ¿Alcanza para los ejercicios que tenés en mente?
+- **P-01 Espacio de Storage.** *Decidido (2026-09-21): comprimir en el teléfono.* El plan gratis de Supabase trae 1 GB de almacenamiento y 5 GB de transferencia por mes. Un video de 30 s grabado con el teléfono pesa entre 15 y 50 MB; comprimido a 720p y ~1 Mbps queda en unos 4 MB, así que entran unos 250 videos y unas 1200 reproducciones por mes. Si no alcanza, las alternativas siguen siendo Supabase Pro o Cloudflare R2.
+- **P-02 Duración máxima de los videos.** *Decidido (2026-09-21): 30 segundos.*
 - **P-03 Nombre y dominio.** "PTrainer" es provisional. Con GitHub Pages la dirección sería `guillermogonzalezt.github.io/ptrainer` salvo que se compre un dominio.
 - **P-04 Datos de salud.** Lesiones, cuestionario PAR-Q y fotos son datos sensibles. Antes de abrir a otros entrenadores (fase 3) hace falta política de privacidad y términos de uso.

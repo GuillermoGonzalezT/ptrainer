@@ -1,7 +1,6 @@
 import { createHashRouter } from 'react-router'
 import { ConSesion, SoloCliente, SoloEntrenador, SoloSinSesion } from './auth/Guardias.tsx'
 import { AuthLayout } from './layouts/AuthLayout.tsx'
-import { Ejercicios } from './pages/Ejercicios.tsx'
 import { Inicio } from './pages/Inicio.tsx'
 import { NoEncontrada } from './pages/NoEncontrada.tsx'
 import { Perfil } from './pages/Perfil.tsx'
@@ -15,6 +14,9 @@ import { Registrarse } from './pages/auth/Registrarse.tsx'
 import { FichaCliente } from './pages/clientes/FichaCliente.tsx'
 import { FormularioCliente } from './pages/clientes/FormularioCliente.tsx'
 import { ListaClientes } from './pages/clientes/ListaClientes.tsx'
+import { DetalleEjercicio } from './pages/ejercicios/DetalleEjercicio.tsx'
+import { FormularioEjercicio } from './pages/ejercicios/FormularioEjercicio.tsx'
+import { ListaEjercicios } from './pages/ejercicios/ListaEjercicios.tsx'
 
 // Rutas por hash (#/clientes): funcionan en GitHub Pages y en Capacitor sin
 // configurar el servidor.
@@ -40,6 +42,8 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Inicio /> },
       { path: 'perfil', element: <Perfil /> },
+      // El entrenador lo edita; el cliente lo ve desde su rutina (RF-23).
+      { path: 'ejercicios/:id', element: <DetalleEjercicio /> },
       {
         element: <SoloEntrenador />,
         children: [
@@ -47,7 +51,9 @@ export const router = createHashRouter([
           { path: 'clientes/nuevo', element: <FormularioCliente /> },
           { path: 'clientes/:id', element: <FichaCliente /> },
           { path: 'clientes/:id/editar', element: <FormularioCliente /> },
-          { path: 'ejercicios', element: <Ejercicios /> },
+          { path: 'ejercicios', element: <ListaEjercicios /> },
+          { path: 'ejercicios/nuevo', element: <FormularioEjercicio /> },
+          { path: 'ejercicios/:id/editar', element: <FormularioEjercicio /> },
           { path: 'rutinas', element: <Rutinas /> },
         ],
       },

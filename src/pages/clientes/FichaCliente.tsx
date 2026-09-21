@@ -15,7 +15,7 @@ import {
 import { mensajeDeError } from '../../lib/errores.ts'
 import { edad, formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
-import styles from './clientes.module.css'
+import styles from '../../styles/pantalla.module.css'
 import { InvitacionCliente } from './InvitacionCliente.tsx'
 import { NotasCliente } from './NotasCliente.tsx'
 

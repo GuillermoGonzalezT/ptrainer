@@ -8,10 +8,27 @@ const base = process.env.VITE_BASE ?? '/ptrainer/'
 
 export default defineConfig({
   base,
+  build: {
+    rolldownOptions: {
+      output: {
+        // Nombre fijo para la librería de compresión de video, así el service
+        // worker la puede excluir (ver globIgnores).
+        chunkFileNames: (chunk) =>
+          chunk.facadeModuleId?.includes('/node_modules/mediabunny/')
+            ? 'assets/mediabunny-[hash].js'
+            : 'assets/[name]-[hash].js',
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        // Solo la usa el entrenador al subir un video: que no la descargue
+        // cada teléfono al instalar la app.
+        globIgnores: ['**/mediabunny-*.js'],
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png', 'logo.svg'],
       manifest: {
         name: 'PTrainer',

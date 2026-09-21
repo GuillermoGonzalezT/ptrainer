@@ -16,7 +16,7 @@ import {
 } from '../../datos/clientes.ts'
 import { mensajeDeError } from '../../lib/errores.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
-import styles from './clientes.module.css'
+import styles from '../../styles/pantalla.module.css'
 
 // Alta (/clientes/nuevo) y edición (/clientes/:id/editar) de la ficha (RF-11).
 export function FormularioCliente() {
