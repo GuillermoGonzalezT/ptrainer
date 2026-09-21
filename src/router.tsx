@@ -20,6 +20,11 @@ import { ListaClientes } from './pages/clientes/ListaClientes.tsx'
 import { DetalleEjercicio } from './pages/ejercicios/DetalleEjercicio.tsx'
 import { FormularioEjercicio } from './pages/ejercicios/FormularioEjercicio.tsx'
 import { ListaEjercicios } from './pages/ejercicios/ListaEjercicios.tsx'
+import { AsignarMetrica } from './pages/metricas/AsignarMetrica.tsx'
+import { DetalleMetrica } from './pages/metricas/DetalleMetrica.tsx'
+import { FormularioMetrica } from './pages/metricas/FormularioMetrica.tsx'
+import { ListaMetricas } from './pages/metricas/ListaMetricas.tsx'
+import { Seguimiento } from './pages/metricas/Seguimiento.tsx'
 import { AsignarPlantilla } from './pages/rutinas/AsignarPlantilla.tsx'
 import { EditorRutina } from './pages/rutinas/EditorRutina.tsx'
 import { ListaRutinas } from './pages/rutinas/ListaRutinas.tsx'
@@ -55,6 +60,10 @@ export const router = createHashRouter([
       // Modo entrenamiento: el cliente, o el entrenador en su nombre (RF-45).
       { path: 'entrenar/:id', element: <Entrenar /> },
       { path: 'sesion/:id', element: <DetalleSesion /> },
+      // Cómo se mide (el cliente también lo ve) y el seguimiento de una
+      // métrica de un cliente (RF-50 a RF-54).
+      { path: 'metricas/:id', element: <DetalleMetrica /> },
+      { path: 'seguimiento/:id', element: <Seguimiento /> },
       {
         element: <SoloEntrenador />,
         children: [
@@ -70,6 +79,10 @@ export const router = createHashRouter([
           { path: 'rutinas/nueva', element: <EditorRutina /> },
           { path: 'rutinas/:id', element: <EditorRutina /> },
           { path: 'rutinas/:id/asignar', element: <AsignarPlantilla /> },
+          { path: 'metricas', element: <ListaMetricas /> },
+          { path: 'metricas/nueva', element: <FormularioMetrica /> },
+          { path: 'metricas/:id/editar', element: <FormularioMetrica /> },
+          { path: 'metricas/:id/asignar', element: <AsignarMetrica /> },
         ],
       },
       {

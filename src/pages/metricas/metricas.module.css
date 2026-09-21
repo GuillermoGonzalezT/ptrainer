@@ -1,0 +1,130 @@
+.resumen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.datoEtiqueta {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+/* Número grande con cifras proporcionales (se ve más prolijo que tabular). */
+.datoValor {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cambio {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* El texto va en tinta de texto; el color va solo en la flecha. */
+.flecha {
+  margin-right: 2px;
+}
+
+.mejora {
+  color: var(--color-bien);
+}
+
+.empeora {
+  color: var(--color-danger);
+}
+
+.intentos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.filaIntentos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* 16px de letra: con menos, el iPhone hace zoom al tocar el campo. */
+.intento {
+  width: 80px;
+  height: var(--tap-min);
+  font: inherit;
+  font-size: 1.125rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.intento:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+.masIntento {
+  height: var(--tap-min);
+  padding: 0 var(--space-3);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.medicion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.medicion strong {
+  font-size: 1.125rem;
+}
+
+.accionTexto {
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  font-size: 0.8125rem;
+  color: var(--color-accent-strong);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.filaMetrica {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+  text-align: right;
+}
+
+.filaValor {
+  font-weight: 700;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

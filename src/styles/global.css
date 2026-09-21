@@ -13,6 +13,10 @@
   --color-on-accent: #ffffff;
   /* El rojo ya es la marca: los errores van en ámbar para no confundirse. */
   --color-danger: #b45309;
+  /* Marcas de datos en gráficas (validado con la guía de dataviz). */
+  --color-grafica: #dc2626;
+  /* Estado "bien" (una mejora). Siempre acompañado de flecha y texto. */
+  --color-bien: #15803d;
 
   --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --radius-sm: 8px;
@@ -43,6 +47,9 @@
     --color-accent-strong: #fca5a5;
     --color-on-accent: #2a0707;
     --color-danger: #fbbf24;
+    /* El rojo de la marca es muy claro para una línea sobre fondo oscuro. */
+    --color-grafica: #ef4444;
+    --color-bien: #4ade80;
   }
 }
 

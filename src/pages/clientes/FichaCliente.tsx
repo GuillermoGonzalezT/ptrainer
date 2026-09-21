@@ -17,6 +17,7 @@ import { edad, formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
 import { InvitacionCliente } from './InvitacionCliente.tsx'
+import { MetricasCliente } from './MetricasCliente.tsx'
 import { NotasCliente } from './NotasCliente.tsx'
 import { RutinasCliente } from './RutinasCliente.tsx'
 import { SesionesCliente } from './SesionesCliente.tsx'
@@ -59,6 +60,7 @@ export function FichaCliente() {
       {!cliente.usuario_id && <InvitacionCliente clienteId={cliente.id} nombre={cliente.nombre} />}
       <RutinasCliente clienteId={cliente.id} />
       <SesionesCliente clienteId={cliente.id} />
+      <MetricasCliente clienteId={cliente.id} />
       <Datos cliente={cliente} />
       <Estado cliente={cliente} alCambiar={recargar} />
       <NotasCliente clienteId={cliente.id} />

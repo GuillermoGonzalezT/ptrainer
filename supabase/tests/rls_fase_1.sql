@@ -135,6 +135,10 @@ select prueba.ok(:'v'::numeric = 80.2, 'peso: sin "mejor", vale el último inten
 
 select prueba.ok(prueba.afectadas(format($q$update public.metricas set nombre = 'X' where id = %L$q$, :'peso')) = 0,
   'la métrica predefinida no se toca');
+-- Así asigna la app a varios clientes a la vez (upsert con ignoreDuplicates).
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.cliente_metricas (cliente_id, metrica_id) values (%L, %L), (%L, %L) on conflict (cliente_id, metrica_id) do nothing$q$,
+  :'c1', :'m1', :'c2', :'m1')) = 1, 'asignar una métrica que ya tiene no falla ni la duplica');
 
 -- Storage de E1
 select prueba.ok(prueba.afectadas(format($q$insert into storage.objects (bucket_id, name) values ('videos', %L)$q$,
