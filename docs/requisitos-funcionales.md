@@ -71,7 +71,7 @@ Cada requisito indica su fase entre corchetes: **[F1]**, **[F2]** o **[F3]**.
 
 ### 5.4 Rutinas y programas
 
-- **RF-30 [F1] Armar una rutina** como lista ordenada de ejercicios. Para cada uno se define: series, repeticiones (número o rango), carga (kg o % de 1RM), descanso, RPE o RIR, tempo y notas. Todos los campos menos el ejercicio y las series son opcionales.
+- **RF-30 [F1] Armar una rutina** como lista ordenada de ejercicios. Para cada uno se define: series, repeticiones (número o rango) o tiempo (para ejercicios como la plancha), carga (kg o % de 1RM), descanso, RPE o RIR, tempo y notas. Todos los campos menos el ejercicio y las series son opcionales.
 - **RF-31 [F1] Plantillas.** Una rutina se puede guardar como plantilla y asignarse a uno o varios clientes. Al asignarla se crea una copia, así que cambiarla para un cliente no afecta a los demás.
 - **RF-32 [F1] Asignar rutinas a un cliente** con los días de la semana en que le tocan, o sin días fijos (el cliente elige cuál hacer).
 - **RF-33 [F2] Superseries y circuitos.** Agrupar dos o más ejercicios que se hacen seguidos, con descanso al final del grupo.
@@ -101,7 +101,7 @@ Una métrica es cualquier cosa que el entrenador quiera medir cada tanto y segui
   - protocolo opcional: cómo se toma la medición, en texto y opcionalmente con un video propio (mismas reglas que [RF-22](#53-biblioteca-de-ejercicios)).
 - **RF-51 [F1] Asignar métricas a clientes.** Una misma métrica se puede asignar a varios clientes. Cada cliente ve solo las suyas.
 - **RF-52 [F1] Registrar mediciones** con fecha, valor y nota opcional. Si en una misma toma hay varios intentos, se cargan todos y cuenta el mejor.
-- **RF-53 [F1] Quién mide.** Por defecto registra el entrenador. Por métrica, puede habilitar que el cliente también cargue sus propias mediciones; en ese caso cada medición indica quién la cargó.
+- **RF-53 [F1] Quién mide.** Por defecto registra el entrenador. Para cada métrica asignada a un cliente, puede habilitar que ese cliente también cargue sus propias mediciones (así funciona también con las predefinidas). Cada medición indica quién la cargó, y el cliente solo puede editar o borrar las suyas.
 - **RF-54 [F1] Ver la evolución** de cada métrica: gráfica en el tiempo, mejor marca, última medición y diferencia con la anterior.
 - **RF-55 [F1] Medidas corporales como métricas.** Peso, perímetros y porcentaje de grasa vienen como métricas predefinidas, con el mismo funcionamiento que el resto.
 - **RF-56 [F2] Objetivo por métrica.** El entrenador puede fijar un valor objetivo por cliente, que se muestra en la gráfica.

@@ -30,6 +30,26 @@ La app abre en `http://localhost:5173/ptrainer/`. Sin `.env.local` arranca igual
 | `npm run lint` | Lint con oxlint |
 | `npm run icons` | Regenera los íconos de la PWA a partir de `public/logo.svg` |
 
+## Base de datos
+
+El esquema vive en [supabase/migrations](supabase/migrations). Nada se cambia desde el panel de Supabase: todo cambio es una migración nueva, así queda registrado cómo llegó la base a su estado.
+
+```bash
+npx supabase migration new nombre_del_cambio   # crea el .sql vacío
+bash scripts/probar-rls.sh                     # prueba todo en un Postgres local
+npx supabase db push                           # lo aplica al proyecto
+```
+
+[scripts/probar-rls.sh](scripts/probar-rls.sh) no necesita Docker: usa el Postgres instalado en la máquina (por defecto `C:\Program Files\PostgreSQL\18`; se cambia con `PG_BIN`). Crea una base descartable, le aplica [un simulador de Supabase](supabase/tests/stub_supabase.sql) y todas las migraciones, y corre [las pruebas de permisos](supabase/tests/rls_fase_1.sql).
+
+Reglas para toda migración nueva:
+
+- **Supabase les da todos los permisos sobre toda tabla nueva a `anon` y `authenticated`.** Cada tabla nueva lleva RLS, `REVOKE ALL … FROM anon, authenticated` y después los `GRANT` justos. `service_role` necesita su `GRANT` explícito.
+- **Las claves de pertenencia no se pueden escribir desde la API** (`entrenador_id` al editar, `usuario_id`, `registrada_por`): se controlan con `GRANT` por columna.
+- **En las policies con subconsultas, calificar las columnas** de la fila evaluada (`objects.name`, `rutinas.cliente_id`). Sin calificar, Postgres puede tomar la de la otra tabla.
+- **Cada bucket nuevo nace con límite de tamaño y de tipos.**
+- **Toda tabla o policy nueva suma sus casos a las pruebas.**
+
 ## Publicación
 
 Cada push a `main` compila y publica en <https://guillermogonzalezt.github.io/ptrainer/> con el workflow [deploy.yml](.github/workflows/deploy.yml).
