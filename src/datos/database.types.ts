@@ -210,14 +210,17 @@ export type Database = {
       entrenadores: {
         Row: {
           created_at: string
+          dias_sin_entrenar: number
           id: string
         }
         Insert: {
           created_at?: string
+          dias_sin_entrenar?: number
           id: string
         }
         Update: {
           created_at?: string
+          dias_sin_entrenar?: number
           id?: string
         }
         Relationships: [
@@ -729,6 +732,13 @@ export type Database = {
           reps: number
           rpe: number
           segundos: number
+        }[]
+      }
+      ultimo_entrenamiento: {
+        Args: never
+        Returns: {
+          cliente_id: string
+          ultima: string
         }[]
       }
     }

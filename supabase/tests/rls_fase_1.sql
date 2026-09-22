@@ -203,7 +203,8 @@ select prueba.falla(format($q$insert into public.sesion_comentarios (sesion_id, 
 select gen_random_uuid() as s_nueva \gset
 select public.registrar_sesion(jsonb_build_object(
   'id', :'s_nueva', 'cliente_id', :'c1', 'rutina_id', :'r1', 'rutina_nombre', 'Fuerza A',
-  'iniciada_en', '2026-09-22T10:00:00Z', 'finalizada_en', '2026-09-22T11:00:00Z', 'esfuerzo', 8, 'comentario', '  ',
+  -- Posterior a la sesión de arriba (creada con now()), para que sea la más reciente.
+  'iniciada_en', now() + interval '1 hour', 'finalizada_en', now() + interval '2 hours', 'esfuerzo', 8, 'comentario', '  ',
   'series', jsonb_build_array(
     jsonb_build_object('ejercicio_id', :'ej1', 'rutina_ejercicio_id', gen_random_uuid(), 'orden_ejercicio', 1, 'numero', 1, 'peso_kg', 70, 'reps', 8),
     jsonb_build_object('ejercicio_id', :'ej1', 'orden_ejercicio', 1, 'numero', 2, 'peso_kg', 72.5, 'reps', 6)
@@ -257,6 +258,13 @@ insert into public.sesiones (cliente_id, rutina_id, rutina_nombre) values (:'c1'
 select prueba.ok(:'rp' = :'E1', 'E1 registra una sesión presencial en nombre de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'E1 ve su perfil y el de su cliente vinculado');
 
+-- Panel: umbral de días sin entrenar y último entrenamiento por cliente
+select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 10 where id = %L', :'E1')) = 1,
+  'panel: el entrenador cambia su umbral de días sin entrenar');
+select prueba.falla(format('update public.entrenadores set dias_sin_entrenar = 0 where id = %L', :'E1'), 'panel: el umbral tiene que estar entre 1 y 60');
+select prueba.falla(format('update public.entrenadores set id = id where id = %L', :'E1'), 'panel: no se puede tocar otra columna de entrenadores');
+select prueba.ok(prueba.filas('select 1 from public.ultimo_entrenamiento()') = 1, 'panel: E1 ve el último entrenamiento de su cliente');
+
 -- guardar_ejercicios_rutina: edita la plantilla de una vez
 select id as re_r1 from public.rutina_ejercicios where rutina_id = :'r1' \gset
 select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
@@ -302,6 +310,8 @@ select prueba.falla(format($q$insert into public.rutinas (entrenador_id, cliente
   'E2 no asigna rutinas a clientes de E1');
 select prueba.falla(format('select public.asignar_plantilla(%L, array[]::uuid[])', :'plantilla'), 'E2 no copia plantillas de E1');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'E2 no edita rutinas de E1');
+select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 30 where id = %L', :'E1')) = 0, 'E2 no cambia el umbral de E1');
+select prueba.ok(prueba.filas('select 1 from public.ultimo_entrenamiento()') = 0, 'E2 no ve entrenamientos de clientes de E1');
 insert into public.rutinas (entrenador_id, nombre) values (:'E2', 'Propia') returning id as r_e2 \gset
 select prueba.falla(format($q$insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series) values (%L, %L, 1, 3)$q$, :'r_e2', :'ej1'),
   'E2 no usa ejercicios de E1');
@@ -318,6 +328,7 @@ select public.aceptar_invitacion(:'inv2') as aceptada2 \gset
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'U2 no ve las sesiones de U1');
 select prueba.ok(prueba.filas(format('select 1 from public.ultima_vez(%L, array[%L]::uuid[])', :'c1', :'ej1')) = 0, 'U2 no ve la última vez de U1');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'un cliente no edita rutinas');
+select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 30 where id = %L', :'E1')) = 0, 'un cliente no cambia el umbral de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U2 ve los videos de su entrenador');
