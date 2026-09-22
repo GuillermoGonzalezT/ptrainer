@@ -17,8 +17,9 @@ const MARGEN = { arriba: 16, derecha: 20, abajo: 28, izquierda: 44 }
 const numero = new Intl.NumberFormat('es', { maximumFractionDigits: 2 })
 const fechaCorta = new Intl.DateTimeFormat('es', { day: 'numeric', month: 'short' })
 
-// Las fechas sin hora se leen como fecha local (ver lib/formato.ts).
-const aMs = (fecha: string) => new Date(`${fecha}T00:00:00`).getTime()
+// Las fechas sin hora (mediciones) se leen como fecha local, igual que en
+// lib/formato.ts; las que traen hora (sesiones) se leen tal cual.
+const aMs = (fecha: string) => new Date(/^\d{4}-\d{2}-\d{2}$/.test(fecha) ? `${fecha}T00:00:00` : fecha).getTime()
 
 // Marcas del eje con números redondos (0, 5, 10… o 0, 0,5, 1…).
 function marcasRedondas(min: number, max: number, cantidad = 4): number[] {
@@ -37,7 +38,7 @@ function marcasRedondas(min: number, max: number, cantidad = 4): number[] {
   return marcas
 }
 
-// RF-54: evolución de una métrica en el tiempo. Una sola serie, así que no
+// RF-54 y RF-60: evolución de una métrica o de un ejercicio en el tiempo. Una sola serie, así que no
 // lleva leyenda: el título de la sección dice qué es. La lista de mediciones
 // debajo hace de tabla.
 export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
@@ -103,8 +104,8 @@ export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
   return (
     <div ref={contenedor} className={styles.contenedor}>
       <p id={idDescripcion} className={styles.oculto}>
-        {descripcion}: {puntos.length} mediciones, de {formatearFecha(puntos[0].fecha)} a{' '}
-        {formatearFecha(puntos[ultimo].fecha)}. Última: {conUnidad(valores[ultimo])}. Usá las flechas para recorrerlas.
+        {descripcion}: {puntos.length} valores, de {formatearFecha(puntos[0].fecha)} a{' '}
+        {formatearFecha(puntos[ultimo].fecha)}. Último: {conUnidad(valores[ultimo])}. Usá las flechas para recorrerlos.
       </p>
       <svg
         className={styles.svg}
@@ -136,7 +137,9 @@ export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
           </text>
         )}
 
-        <path className={styles.area} d={area} />
+        {/* El relleno se lee como cantidad desde cero: con el eje recortado
+            (arranca en 38, en 1750…) exageraría las diferencias. */}
+        {yMin <= 0 && <path className={styles.area} d={area} />}
         <path className={styles.linea} d={linea} />
         {elegido !== null && (
           <line className={styles.cruce} x1={xs[elegido]} x2={xs[elegido]} y1={MARGEN.arriba} y2={ALTO - MARGEN.abajo} />

@@ -717,9 +717,32 @@ export type Database = {
         Args: { p_cliente_ids: string[]; p_rutina_id: string }
         Returns: string[]
       }
+      ejercicios_realizados: {
+        Args: { p_cliente_id: string }
+        Returns: {
+          carga_max: number
+          ejercicio_id: string
+          nombre: string
+          sesiones: number
+          ultima: string
+        }[]
+      }
       guardar_ejercicios_rutina: {
         Args: { p_ejercicios: Json; p_rutina_id: string }
         Returns: undefined
+      }
+      progreso_ejercicio: {
+        Args: { p_cliente_id: string; p_ejercicio_id: string }
+        Returns: {
+          carga_max: number
+          fecha: string
+          reps_max: number
+          reps_total: number
+          segundos_max: number
+          series: number
+          sesion_id: string
+          volumen: number
+        }[]
       }
       registrar_sesion: { Args: { p_sesion: Json }; Returns: string }
       ultima_vez: {

@@ -231,6 +231,13 @@ select prueba.ok(prueba.filas(format('select 1 from public.sesiones where client
 select prueba.ok((select string_agg(peso_kg::float8::text || 'x' || reps, ' ' order by numero) from public.ultima_vez(:'c1', array[:'ej1']::uuid[])) = '70x8 72.5x6',
   'ultima_vez: devuelve las series de la sesión más reciente');
 
+-- Progreso por ejercicio (RF-60). U1 tiene dos sesiones con sentadilla:
+-- 60x8, y 70x8 + 72,5x6 (volumen 995).
+select prueba.ok((select sesiones = 2 and carga_max = 72.5 from public.ejercicios_realizados(:'c1') where ejercicio_id = :'ej1'),
+  'ejercicios_realizados: cuenta sesiones y carga máxima');
+select prueba.ok((select string_agg(carga_max::float8::text || '/' || volumen::float8::text, ' ' order by fecha) from public.progreso_ejercicio(:'c1', :'ej1')) = '60/480 72.5/995',
+  'progreso_ejercicio: carga máxima y volumen por sesión');
+
 select prueba.falla(format($q$insert into public.mediciones (cliente_metrica_id, intentos, valor) values (%L, '{50}', 999)$q$, :'cm1'),
   'nadie manda el valor: lo calcula la base');
 insert into public.mediciones (cliente_metrica_id, intentos) values (:'cm1', '{50,48}') returning valor as v \gset
@@ -312,6 +319,8 @@ select prueba.falla(format('select public.asignar_plantilla(%L, array[]::uuid[])
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'E2 no edita rutinas de E1');
 select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 30 where id = %L', :'E1')) = 0, 'E2 no cambia el umbral de E1');
 select prueba.ok(prueba.filas('select 1 from public.ultimo_entrenamiento()') = 0, 'E2 no ve entrenamientos de clientes de E1');
+select prueba.ok(prueba.filas(format('select 1 from public.ejercicios_realizados(%L)', :'c1'))
+  + prueba.filas(format('select 1 from public.progreso_ejercicio(%L, %L)', :'c1', :'ej1')) = 0, 'E2 no ve el progreso de clientes de E1');
 insert into public.rutinas (entrenador_id, nombre) values (:'E2', 'Propia') returning id as r_e2 \gset
 select prueba.falla(format($q$insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series) values (%L, %L, 1, 3)$q$, :'r_e2', :'ej1'),
   'E2 no usa ejercicios de E1');
@@ -327,6 +336,7 @@ set role authenticated;
 select public.aceptar_invitacion(:'inv2') as aceptada2 \gset
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'U2 no ve las sesiones de U1');
 select prueba.ok(prueba.filas(format('select 1 from public.ultima_vez(%L, array[%L]::uuid[])', :'c1', :'ej1')) = 0, 'U2 no ve la última vez de U1');
+select prueba.ok(prueba.filas(format('select 1 from public.progreso_ejercicio(%L, %L)', :'c1', :'ej1')) = 0, 'U2 no ve el progreso de U1');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'un cliente no edita rutinas');
 select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 30 where id = %L', :'E1')) = 0, 'un cliente no cambia el umbral de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');

@@ -25,6 +25,8 @@ import { DetalleMetrica } from './pages/metricas/DetalleMetrica.tsx'
 import { FormularioMetrica } from './pages/metricas/FormularioMetrica.tsx'
 import { ListaMetricas } from './pages/metricas/ListaMetricas.tsx'
 import { Seguimiento } from './pages/metricas/Seguimiento.tsx'
+import { ProgresoCliente } from './pages/progreso/ProgresoCliente.tsx'
+import { ProgresoEjercicio } from './pages/progreso/ProgresoEjercicio.tsx'
 import { AsignarPlantilla } from './pages/rutinas/AsignarPlantilla.tsx'
 import { EditorRutina } from './pages/rutinas/EditorRutina.tsx'
 import { ListaRutinas } from './pages/rutinas/ListaRutinas.tsx'
@@ -64,6 +66,8 @@ export const router = createHashRouter([
       // métrica de un cliente (RF-50 a RF-54).
       { path: 'metricas/:id', element: <DetalleMetrica /> },
       { path: 'seguimiento/:id', element: <Seguimiento /> },
+      // Progreso de un ejercicio de un cliente (RF-60): lo ven los dos.
+      { path: 'progreso/:clienteId/:ejercicioId', element: <ProgresoEjercicio /> },
       {
         element: <SoloEntrenador />,
         children: [
@@ -72,6 +76,7 @@ export const router = createHashRouter([
           { path: 'clientes/:id', element: <FichaCliente /> },
           { path: 'clientes/:id/editar', element: <FormularioCliente /> },
           { path: 'clientes/:id/sesiones', element: <Historial /> },
+          { path: 'clientes/:id/progreso', element: <ProgresoCliente /> },
           { path: 'ejercicios', element: <ListaEjercicios /> },
           { path: 'ejercicios/nuevo', element: <FormularioEjercicio /> },
           { path: 'ejercicios/:id/editar', element: <FormularioEjercicio /> },

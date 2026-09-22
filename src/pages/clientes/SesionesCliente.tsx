@@ -18,7 +18,18 @@ export function SesionesCliente({ clienteId }: { clienteId: string }) {
       {error && <Aviso tipo="error">{error}</Aviso>}
       {sesiones && sesiones.length === 0 && <p className={styles.textoApagado}>Todavía no registró ninguna sesión.</p>}
       {sesiones && sesiones.length > 0 && <ListaSesiones sesiones={sesiones.slice(0, MOSTRAR)} />}
-      {sesiones && sesiones.length > MOSTRAR && <Link to={`/clientes/${clienteId}/sesiones`}>Ver todas</Link>}
+      {sesiones && sesiones.length > 0 && (
+        <div className={styles.acciones}>
+          {sesiones.length > MOSTRAR && (
+            <Link to={`/clientes/${clienteId}/sesiones`} className={`${styles.botonLink} ${styles.botonSecundario}`}>
+              Ver todas
+            </Link>
+          )}
+          <Link to={`/clientes/${clienteId}/progreso`} className={`${styles.botonLink} ${styles.botonSecundario}`}>
+            Progreso por ejercicio
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
