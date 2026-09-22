@@ -209,6 +209,13 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
         {items.length === 0 && !eligiendo && (
           <p className={pantalla.textoApagado}>Todavía no tiene ejercicios.</p>
         )}
+        {items.length > 1 && (
+          <p className={pantalla.textoApagado}>
+            Para armar una superserie o un circuito, abrí un ejercicio y tildá «Hacerlo seguido del de abajo». Los
+            que queden unidos comparten letra (A1, A2…): se hace una serie de cada uno, uno atrás del otro, y el
+            descanso va al terminar la vuelta.
+          </p>
+        )}
         {items.length > 0 && (
           <ol className={styles.items}>
             {items.map((b, i) => (

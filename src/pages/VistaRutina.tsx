@@ -37,8 +37,8 @@ export function VistaRutina() {
 
       {etiquetas.some(Boolean) && (
         <p className={pantalla.textoApagado}>
-          Los ejercicios con la misma letra (A1, A2…) van en superserie: una serie de cada uno, seguidos, y el
-          descanso al terminar la vuelta.
+          Los ejercicios con la misma letra (A1, A2…) van seguidos, sin descanso en el medio: una serie de cada
+          uno, uno atrás del otro, y el descanso recién al terminar la vuelta.
         </p>
       )}
       <ol className={styles.ejercicios}>

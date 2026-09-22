@@ -38,6 +38,10 @@ const RETOMAR_SIN_PREGUNTAR_MS = 6 * 60 * 60 * 1000
 // Hora (en ms) en que termina un descanso que arranca ahora.
 const finDentroDe = (segundos: number) => Date.now() + segundos * 1000
 
+// Dos ejercicios seguidos son una superserie; de tres en adelante, un
+// circuito. Así lo nombra el gimnasio y así lo muestra la pantalla.
+const nombreDePaso = (cuantos: number) => (cuantos === 1 ? 'Ejercicio' : cuantos === 2 ? 'Superserie' : 'Circuito')
+
 // /entrenar/:id — RF-41 a RF-45. El cliente entrena su rutina, o el
 // entrenador la registra en su nombre durante una clase presencial.
 export function Entrenar() {
@@ -190,7 +194,7 @@ function EnCurso({ inicial, ultimas, maximos }: { inicial: SesionEnCurso } & Dat
       <Encabezado titulo={sesion.rutinaNombre} volver={{ to: volverA, etiqueta: 'la rutina' }} />
       <div className={styles.progreso}>
         <span className={pantalla.textoApagado}>
-          {paso.length > 1 ? 'Superserie' : 'Ejercicio'} {pasoActual + 1} de {listaPasos.length}
+          {nombreDePaso(paso.length)} {pasoActual + 1} de {listaPasos.length}
         </span>
         <div className={styles.puntos}>
           {listaPasos.map((p, i) => (
@@ -208,7 +212,8 @@ function EnCurso({ inicial, ultimas, maximos }: { inicial: SesionEnCurso } & Dat
 
       {paso.length > 1 && (
         <p className={styles.avisoSuperserie}>
-          Superserie: hacé una serie de cada ejercicio, uno atrás del otro, y descansá al terminar la vuelta.
+          {nombreDePaso(paso.length)}: hacé una serie de cada ejercicio, uno atrás del otro, y descansá al terminar
+          la vuelta.
         </p>
       )}
       {paso.map((j) => (

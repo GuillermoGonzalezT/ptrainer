@@ -7,7 +7,7 @@ type Props = {
   numero: number
   // A1, A2… si está en una superserie (RF-33).
   superserie: string | null
-  // Está en una superserie y no es el último: el descanso va después del último.
+  // Está unido al de abajo: el descanso va recién después del último de la vuelta.
   sinDescanso: boolean
   item: Borrador
   abierto: boolean
@@ -78,7 +78,7 @@ export function ItemRutina({
             <Campo
               etiqueta="Descanso (s)"
               inputMode="numeric"
-              ayuda={sinDescanso ? 'En la superserie se pasa directo al siguiente: el descanso va después del último.' : undefined}
+              ayuda={sinDescanso ? 'Va unido al de abajo: se pasa directo al siguiente y el descanso queda al final de la vuelta.' : undefined}
               value={item.descanso}
               onChange={(e) => onCambio({ descanso: e.target.value })}
             />
@@ -169,7 +169,7 @@ export function ItemRutina({
                 checked={item.unidoConSiguiente}
                 onChange={(e) => onCambio({ unidoConSiguiente: e.target.checked })}
               />
-              Hacerlo en superserie con el ejercicio de abajo
+              Hacerlo seguido del de abajo, sin descanso en el medio
             </label>
           )}
 
