@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { Avatar } from '../../components/Avatar.tsx'
 import { Encabezado } from '../../components/Encabezado.tsx'
 import { Aviso, Boton } from '../../components/Formulario.tsx'
 import { Segmentos } from '../../components/Segmentos.tsx'
 import { etiquetaEstado, etiquetaModalidad, listarClientes, type Cliente, type EstadoCliente } from '../../datos/clientes.ts'
+import { urlsDeFotos } from '../../datos/fotos.ts'
 import { normalizar } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
@@ -21,6 +23,9 @@ const filtros: { valor: Filtro; etiqueta: string }[] = [
 // entrenador tiene decenas de clientes, no miles.
 export function ListaClientes() {
   const { datos: clientes, error, cargando, recargar } = useConsulta(listarClientes, [])
+  // Las fotos se piden todas juntas, después de tener la lista.
+  const rutas = (clientes ?? []).flatMap((c) => (c.foto_path ? [c.foto_path] : []))
+  const { datos: fotos } = useConsulta(() => urlsDeFotos(rutas), [rutas])
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState<Filtro>('activo')
 
@@ -75,7 +80,7 @@ export function ListaClientes() {
             <ul className={styles.lista}>
               {visibles.map((c) => (
                 <li key={c.id}>
-                  <FilaCliente cliente={c} />
+                  <FilaCliente cliente={c} foto={c.foto_path ? fotos?.get(c.foto_path) : null} />
                 </li>
               ))}
             </ul>
@@ -88,12 +93,10 @@ export function ListaClientes() {
   )
 }
 
-function FilaCliente({ cliente }: { cliente: Cliente }) {
+function FilaCliente({ cliente, foto }: { cliente: Cliente; foto: string | null | undefined }) {
   return (
     <Link to={`/clientes/${cliente.id}`} className={styles.fila}>
-      <span className={styles.inicial} aria-hidden="true">
-        {cliente.nombre.trim()[0]?.toUpperCase()}
-      </span>
+      <Avatar key={foto ?? 'sin-foto'} nombre={cliente.nombre} url={foto} />
       <span className={styles.filaTexto}>
         <span className={styles.filaNombre}>{cliente.nombre}</span>
         <span className={styles.filaDetalle}>

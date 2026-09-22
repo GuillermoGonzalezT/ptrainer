@@ -16,6 +16,7 @@ import { mensajeDeError } from '../../lib/errores.ts'
 import { edad, formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
+import { FotoCliente } from './FotoCliente.tsx'
 import { InvitacionCliente } from './InvitacionCliente.tsx'
 import { MetricasCliente } from './MetricasCliente.tsx'
 import { NotasCliente } from './NotasCliente.tsx'
@@ -57,6 +58,7 @@ export function FichaCliente() {
           </Link>
         }
       />
+      <FotoCliente cliente={cliente} alCambiar={recargar} />
       {!cliente.usuario_id && <InvitacionCliente clienteId={cliente.id} nombre={cliente.nombre} />}
       <RutinasCliente clienteId={cliente.id} />
       <SesionesCliente clienteId={cliente.id} />

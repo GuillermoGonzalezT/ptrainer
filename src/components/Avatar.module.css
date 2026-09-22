@@ -1,0 +1,13 @@
+.avatar {
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--color-surface-2);
+}
+
+.inicial {
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: var(--color-accent-strong);
+}

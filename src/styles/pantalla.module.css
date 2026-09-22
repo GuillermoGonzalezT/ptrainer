@@ -52,18 +52,6 @@
   outline-offset: -2px;
 }
 
-.inicial {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-weight: 700;
-  color: var(--color-accent-strong);
-  background: var(--color-surface-2);
-}
-
 .filaTexto {
   display: flex;
   flex-direction: column;

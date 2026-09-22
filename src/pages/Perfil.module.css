@@ -23,3 +23,14 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.cabecera h1 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
