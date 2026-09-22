@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { useAuth } from '../../auth/useAuth.ts'
 import { Encabezado } from '../../components/Encabezado.tsx'
 import { Aviso, Boton } from '../../components/Formulario.tsx'
-import { archivarEjercicio, obtenerEjercicio, type Ejercicio } from '../../datos/ejercicios.ts'
+import { archivarEjercicio, copiarEjercicio, obtenerEjercicio, type Ejercicio } from '../../datos/ejercicios.ts'
 import { mensajeDeError } from '../../lib/errores.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
@@ -55,10 +55,46 @@ export function DetalleEjercicio() {
       {ejercicio.archivado && (
         <Aviso tipo="info">Archivado: no aparece al armar rutinas nuevas.</Aviso>
       )}
+      {ejercicio.entrenador_id === null && tipo === 'entrenador' && (
+        <Copiar ejercicio={ejercicio} entrenadorId={session!.user.id} />
+      )}
       <VideosEjercicio ejercicioId={ejercicio.id} editable={editable} />
       <Informacion ejercicio={ejercicio} />
       {editable && <Archivar ejercicio={ejercicio} alCambiar={recargar} />}
     </section>
+  )
+}
+
+// RF-24: un ejercicio de la biblioteca base no se edita, pero se puede
+// copiar a la biblioteca propia para ajustarlo y grabarle un video.
+function Copiar({ ejercicio, entrenadorId }: { ejercicio: Ejercicio; entrenadorId: string }) {
+  const navigate = useNavigate()
+  const [copiando, setCopiando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function copiar() {
+    setCopiando(true)
+    setError(null)
+    try {
+      const nuevoId = await copiarEjercicio(entrenadorId, ejercicio)
+      navigate(`/ejercicios/${nuevoId}`, { replace: true })
+    } catch (e) {
+      setError(mensajeDeError(e))
+      setCopiando(false)
+    }
+  }
+
+  return (
+    <div className={styles.seccion}>
+      <p className={styles.textoApagado}>
+        Es de la biblioteca base: viene con la app y no se edita. Copialo a tus ejercicios para ajustar la
+        descripción o grabarle tu video.
+      </p>
+      <Boton type="button" variante="secundario" cargando={copiando} onClick={copiar}>
+        Copiar a mis ejercicios
+      </Boton>
+      {error && <Aviso tipo="error">{error}</Aviso>}
+    </div>
   )
 }
 

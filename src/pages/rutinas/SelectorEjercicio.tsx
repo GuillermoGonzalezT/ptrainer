@@ -61,7 +61,9 @@ export function SelectorEjercicio({ onElegir, onCerrar }: Props) {
               <button type="button" className={`${pantalla.fila} ${styles.opcion}`} onClick={() => onElegir(e)}>
                 <span className={pantalla.filaTexto}>
                   <span className={pantalla.filaNombre}>{e.nombre}</span>
-                  {e.grupo_muscular && <span className={pantalla.filaDetalle}>{e.grupo_muscular}</span>}
+                  <span className={pantalla.filaDetalle}>
+                    {[e.grupo_muscular, e.entrenador_id === null && 'biblioteca base'].filter(Boolean).join(' · ')}
+                  </span>
                 </span>
                 <span aria-hidden="true">＋</span>
               </button>

@@ -106,6 +106,15 @@ select prueba.ok(prueba.afectadas(format($q$insert into public.ejercicio_videos 
   :'ej1', :'E1' || '/ejercicios/' || :'ej1' || '/v1.mp4')) = 1, 'el entrenador agrega un video en su carpeta');
 select prueba.falla(format($q$insert into public.ejercicio_videos (ejercicio_id, storage_path) values (%L, %L)$q$,
   :'ej1', :'E2' || '/ejercicios/v2.mp4'), 'un video fuera de su carpeta se rechaza');
+
+-- Biblioteca base (RF-24): la ven todos y no la edita nadie.
+select id as ej_base from public.ejercicios where entrenador_id is null and nombre = 'Sentadilla con barra' \gset
+select prueba.ok(prueba.filas('select 1 from public.ejercicios where entrenador_id is null') >= 40,
+  'la biblioteca base trae ejercicios precargados');
+select prueba.ok(prueba.afectadas(format($q$update public.ejercicios set nombre = 'X' where id = %L$q$, :'ej_base')) = 0,
+  'un ejercicio de la biblioteca base no se edita');
+select prueba.ok(prueba.afectadas(format($q$delete from public.ejercicios where id = %L$q$, :'ej_base')) = 0,
+  'un ejercicio de la biblioteca base no se borra');
 select prueba.falla(format($q$insert into public.ejercicio_videos (ejercicio_id, storage_path, principal) values (%L, %L, true)$q$,
   :'ej1', :'E1' || '/ejercicios/v3.mp4'), 'no puede haber dos videos principales');
 
@@ -118,6 +127,11 @@ select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios whe
   'asignar_plantilla copia los ejercicios');
 select prueba.ok(prueba.filas(format('select 1 from public.rutinas where plantilla_id = %L', :'plantilla')) = 2,
   'asignar_plantilla crea una copia por cliente');
+
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series) values (%L, %L, 9, 3)$q$,
+  :'plantilla', :'ej_base')) = 1, 'un ejercicio de la biblioteca base se puede usar en una rutina');
+delete from public.rutina_ejercicios where rutina_id = :'plantilla' and ejercicio_id = :'ej_base';
 
 insert into public.metricas (entrenador_id, nombre, unidad, mejor) values (:'E1', 'Salto vertical', 'cm', 'mayor') returning id as m1 \gset
 insert into public.metricas (entrenador_id, nombre, unidad, mejor) values (:'E1', '5 km', 's', 'menor') returning id as m2 \gset
@@ -157,7 +171,8 @@ select prueba.como(:'U1');
 set role authenticated;
 
 select prueba.ok(prueba.filas('select 1 from public.clientes') = 0, 'U1 sin invitar no ve ninguna ficha');
-select prueba.ok(prueba.filas('select 1 from public.ejercicios') = 0, 'U1 sin invitar no ve ejercicios');
+-- La biblioteca base (RF-24) la ven todos: acá se cuentan solo los de entrenadores.
+select prueba.ok(prueba.filas('select 1 from public.ejercicios where entrenador_id is not null') = 0, 'U1 sin invitar no ve ejercicios de ningún entrenador');
 select prueba.ok(prueba.filas('select 1 from public.metricas') = 7, 'U1 sin invitar solo ve las 7 predefinidas');
 select prueba.falla($q$select public.aceptar_invitacion('NOEXISTE00')$q$, 'un código inventado se rechaza');
 
@@ -173,7 +188,7 @@ select prueba.ok(prueba.filas('select 1 from public.notas_cliente') = 0, 'U1 no 
 select prueba.ok(prueba.filas('select 1 from public.invitaciones') = 0, 'U1 no ve invitaciones');
 select prueba.ok(prueba.filas('select 1 from public.rutinas') = 1, 'U1 ve solo su rutina (ni la plantilla ni la de Beto)');
 select prueba.ok(prueba.filas('select 1 from public.rutina_ejercicios') = 1, 'U1 ve los ejercicios de su rutina');
-select prueba.ok(prueba.filas('select 1 from public.ejercicios') = 1, 'U1 ve la biblioteca de su entrenador');
+select prueba.ok(prueba.filas('select 1 from public.ejercicios where entrenador_id is not null') = 1, 'U1 ve la biblioteca de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.ejercicio_videos') = 1, 'U1 ve los videos de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U1 ve su perfil y el de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.entrenadores') = 1, 'U1 ve a su entrenador');
@@ -362,7 +377,7 @@ set role authenticated;
 select prueba.ok(prueba.filas('select 1 from public.clientes') = 0, 'E2 no ve clientes de E1');
 select prueba.ok(prueba.filas('select 1 from public.notas_cliente') = 0, 'E2 no ve notas de E1');
 select prueba.ok(prueba.filas('select 1 from public.invitaciones') = 0, 'E2 no ve invitaciones de E1');
-select prueba.ok(prueba.filas('select 1 from public.ejercicios') = 0, 'E2 no ve ejercicios de E1');
+select prueba.ok(prueba.filas('select 1 from public.ejercicios where entrenador_id is not null') = 0, 'E2 no ve ejercicios de E1');
 select prueba.ok(prueba.filas('select 1 from public.ejercicio_videos') = 0, 'E2 no ve videos de E1');
 select prueba.ok(prueba.filas('select 1 from public.rutinas') = 0, 'E2 no ve rutinas de E1');
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'E2 no ve sesiones de E1');
@@ -413,7 +428,8 @@ reset role;
 select prueba.como(:'U3');
 set role authenticated;
 select prueba.ok(prueba.filas('select 1 from public.clientes') + prueba.filas('select 1 from public.rutinas')
-  + prueba.filas('select 1 from public.sesiones') + prueba.filas('select 1 from public.ejercicios') = 0, 'U3 no ve nada');
+  + prueba.filas('select 1 from public.sesiones') + prueba.filas('select 1 from public.ejercicios where entrenador_id is not null') = 0,
+  'U3 no ve nada, salvo la biblioteca base');
 select prueba.falla(format('select public.aceptar_invitacion(%L)', :'inv1'), 'U3 no reutiliza la invitación de U1');
 
 -- Baja (RF-14) ----------------------------------------------------------------------
@@ -428,7 +444,7 @@ select prueba.como(:'U1');
 set role authenticated;
 select prueba.ok(prueba.filas('select 1 from public.clientes') = 1, 'U1 de baja todavía ve su ficha (para que la app avise)');
 select prueba.ok(prueba.filas('select 1 from public.rutinas') = 0, 'U1 de baja no ve rutinas');
-select prueba.ok(prueba.filas('select 1 from public.ejercicios') = 0, 'U1 de baja no ve ejercicios');
+select prueba.ok(prueba.filas('select 1 from public.ejercicios where entrenador_id is not null') = 0, 'U1 de baja no ve ejercicios de su entrenador');
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'U1 de baja no ve sesiones');
 select prueba.ok(prueba.filas('select 1 from storage.objects') = 0, 'storage: U1 de baja no ve archivos');
 select prueba.falla(format($q$insert into public.sesiones (cliente_id, rutina_nombre) values (%L, 'X')$q$, :'c1'), 'U1 de baja no registra sesiones');

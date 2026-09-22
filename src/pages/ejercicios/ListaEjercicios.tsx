@@ -16,14 +16,15 @@ export function ListaEjercicios() {
   const [verArchivados, setVerArchivados] = useState(false)
 
   const texto = normalizar(busqueda.trim())
-  const visibles = (ejercicios ?? []).filter(
-    (e) =>
-      e.archivado === verArchivados &&
-      (!grupo || e.grupo_muscular === grupo) &&
-      (!equipo || e.equipamiento === equipo) &&
-      (!texto || normalizar(e.nombre).includes(texto)),
-  )
+  const coincide = (e: EjercicioEnLista) =>
+    (!grupo || e.grupo_muscular === grupo) &&
+    (!equipo || e.equipamiento === equipo) &&
+    (!texto || normalizar(e.nombre).includes(texto))
+  // Los propios y los de la biblioteca base (RF-24) van en listas separadas.
+  const propios = (ejercicios ?? []).filter((e) => e.entrenador_id !== null && e.archivado === verArchivados && coincide(e))
+  const base = (ejercicios ?? []).filter((e) => e.entrenador_id === null && coincide(e))
   const archivados = (ejercicios ?? []).filter((e) => e.archivado).length
+  const tienePropios = (ejercicios ?? []).some((e) => e.entrenador_id !== null)
 
   return (
     <section className={styles.pantalla}>
@@ -45,9 +46,12 @@ export function ListaEjercicios() {
         </>
       )}
 
-      {ejercicios && ejercicios.length === 0 && (
+      {ejercicios && !tienePropios && (
         <div className={styles.vacio}>
-          <p>Tu biblioteca está vacía. Agregá tus ejercicios con un video tuyo mostrando cómo se hacen.</p>
+          <p>
+            Todavía no tenés ejercicios propios. Podés usar los de la biblioteca base, o copiar uno y grabarle tu
+            video.
+          </p>
           <Link to="/ejercicios/nuevo" className={styles.botonLink}>
             Agregar ejercicio
           </Link>
@@ -90,27 +94,52 @@ export function ListaEjercicios() {
               </option>
             ))}
           </select>
-          {visibles.length === 0 ? (
-            <p className={styles.textoApagado}>Ningún ejercicio coincide.</p>
-          ) : (
-            <ul className={styles.lista}>
-              {visibles.map((e) => (
-                <li key={e.id}>
-                  <FilaEjercicio ejercicio={e} />
-                </li>
-              ))}
-            </ul>
+          {tienePropios && (
+            <>
+              <h2 className={styles.subtitulo}>{verArchivados ? 'Archivados' : 'Tuyos'}</h2>
+              {propios.length === 0 ? (
+                <p className={styles.textoApagado}>Ninguno coincide.</p>
+              ) : (
+                <Lista ejercicios={propios} />
+              )}
+            </>
           )}
           {(archivados > 0 || verArchivados) && (
             <Boton type="button" variante="secundario" onClick={() => setVerArchivados(!verArchivados)}>
               {verArchivados ? 'Volver a la biblioteca' : `Ver archivados (${archivados})`}
             </Boton>
           )}
+          {!verArchivados && (
+            <>
+              <h2 className={styles.subtitulo}>Biblioteca base</h2>
+              <p className={styles.textoApagado}>
+                Vienen con la app y no se editan. Podés usarlos en tus rutinas, o copiar uno para ajustarlo y grabarle
+                tu video.
+              </p>
+              {base.length === 0 ? (
+                <p className={styles.textoApagado}>Ninguno coincide.</p>
+              ) : (
+                <Lista ejercicios={base} />
+              )}
+            </>
+          )}
         </>
       )}
 
       {cargando && !error && <p className={styles.textoApagado}>Cargando…</p>}
     </section>
+  )
+}
+
+function Lista({ ejercicios }: { ejercicios: EjercicioEnLista[] }) {
+  return (
+    <ul className={styles.lista}>
+      {ejercicios.map((e) => (
+        <li key={e.id}>
+          <FilaEjercicio ejercicio={e} />
+        </li>
+      ))}
+    </ul>
   )
 }
 
@@ -122,9 +151,11 @@ function FilaEjercicio({ ejercicio }: { ejercicio: EjercicioEnLista }) {
         <span className={styles.filaNombre}>{ejercicio.nombre}</span>
         {detalle && <span className={styles.filaDetalle}>{detalle}</span>}
       </span>
-      <span className={styles.etiqueta}>
-        {ejercicio.videos === 0 ? 'Sin video' : ejercicio.videos === 1 ? '1 video' : `${ejercicio.videos} videos`}
-      </span>
+      {ejercicio.entrenador_id !== null && (
+        <span className={styles.etiqueta}>
+          {ejercicio.videos === 0 ? 'Sin video' : ejercicio.videos === 1 ? '1 video' : `${ejercicio.videos} videos`}
+        </span>
+      )}
     </Link>
   )
 }

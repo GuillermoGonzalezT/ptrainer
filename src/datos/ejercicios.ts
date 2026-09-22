@@ -94,6 +94,18 @@ export async function actualizarEjercicio(id: string, datos: DatosEjercicio): Pr
   if (error) throw error
 }
 
+// RF-24: copia un ejercicio de la biblioteca base a la del entrenador, para
+// poder editarlo y grabarle su propio video.
+export async function copiarEjercicio(entrenadorId: string, ejercicio: Ejercicio): Promise<string> {
+  return crearEjercicio(entrenadorId, {
+    nombre: ejercicio.nombre,
+    grupo_muscular: ejercicio.grupo_muscular,
+    equipamiento: ejercicio.equipamiento,
+    descripcion: ejercicio.descripcion,
+    consejos: ejercicio.consejos,
+  })
+}
+
 // RF-21: archivado no aparece al armar rutinas, pero sigue en el historial.
 export async function archivarEjercicio(id: string, archivado: boolean): Promise<void> {
   const { error } = await db().from('ejercicios').update({ archivado }).eq('id', id)
