@@ -461,6 +461,38 @@ select prueba.falla('select 1 from public.metricas', 'anon no lee métricas');
 select prueba.falla($q$select public.aceptar_invitacion('X')$q$, 'anon no llama funciones');
 reset role;
 
+-- Series por bloque (RF-33) ---------------------------------------------------------
+-- La migración empareja las series dentro de cada superserie o circuito. Se
+-- arma un bloque disparejo a mano, como los que pudo dejar el editor viejo, y
+-- se corre la migración de verdad.
+
+select set_config('request.jwt.claims', '', false);
+insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series, superserie) values
+  (:'r1', :'ej1', 10, 3, 1),
+  (:'r1', :'ej1', 11, 5, 1),
+  (:'r1', :'ej1', 12, 4, 1),
+  (:'r1', :'ej1', 13, 7, 2);
+
+\ir ../migrations/20260923130000_series_por_bloque.sql
+
+select prueba.ok((
+  select array_agg(series order by orden) from public.rutina_ejercicios
+  where rutina_id = :'r1' and superserie = 1
+) = array[3, 3, 3]::smallint[], 'series por bloque: el bloque toma las series del primero');
+select prueba.ok((
+  select series from public.rutina_ejercicios where rutina_id = :'r1' and superserie = 2
+) = 7, 'series por bloque: un bloque de uno solo queda igual');
+select prueba.ok((select series from public.rutina_ejercicios where id = :'re_r1') = 4,
+  'series por bloque: no toca los ejercicios sueltos');
+
+\ir ../migrations/20260923130000_series_por_bloque.sql
+select prueba.ok((
+  select array_agg(series order by orden) from public.rutina_ejercicios
+  where rutina_id = :'r1' and superserie = 1
+) = array[3, 3, 3]::smallint[], 'series por bloque: correrla de nuevo no cambia nada');
+
+delete from public.rutina_ejercicios where rutina_id = :'r1' and superserie is not null;
+
 -- Estructura ------------------------------------------------------------------------
 
 select prueba.ok(not exists (
