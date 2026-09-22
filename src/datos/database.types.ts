@@ -322,6 +322,54 @@ export type Database = {
           },
         ]
       }
+      fotos_progreso: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          fecha: string
+          id: string
+          nota: string | null
+          storage_path: string
+          subida_por: string | null
+          vista: string
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          nota?: string | null
+          storage_path: string
+          subida_por?: string | null
+          vista: string
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          fecha?: string
+          id?: string
+          nota?: string | null
+          storage_path?: string
+          subida_por?: string | null
+          vista?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fotos_progreso_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fotos_progreso_subida_por_fkey"
+            columns: ["subida_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invitaciones: {
         Row: {
           cliente_id: string

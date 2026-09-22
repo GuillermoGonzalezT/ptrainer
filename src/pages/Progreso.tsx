@@ -39,8 +39,9 @@ export function Progreso() {
       {asignaciones && asignaciones.length > 0 && <ListaSeguimientos asignaciones={asignaciones} />}
 
       {ficha && (
-        <p>
-          <Link to={`/checkins/${ficha.id}`}>Ver mis check-ins semanales</Link>
+        <p className={pantalla.acciones}>
+          <Link to={`/checkins/${ficha.id}`}>Mis check-ins semanales</Link>
+          <Link to={`/fotos/${ficha.id}`}>Mis fotos de progreso</Link>
         </p>
       )}
 

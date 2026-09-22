@@ -267,8 +267,27 @@ select prueba.falla(format($q$insert into public.checkins (cliente_id, semana, s
 select prueba.falla(format($q$insert into public.checkins (cliente_id, semana, registrado_por) values (%L, current_date, %L)$q$, :'c1', :'E1'),
   'el check-in queda a nombre de quien lo carga');
 
+-- Fotos de progreso (RF-64)
+select :'E1' || '/clientes/' || :'c1' || '/progreso/f1.jpg' as ruta_progreso \gset
+select prueba.ok(prueba.afectadas(format($q$insert into storage.objects (bucket_id, name) values ('imagenes', %L)$q$, :'ruta_progreso')) = 1,
+  'storage: U1 sube su foto de progreso a la carpeta de su entrenador');
+select prueba.falla(format($q$insert into storage.objects (bucket_id, name) values ('imagenes', %L)$q$,
+  :'E1' || '/clientes/' || :'c2' || '/progreso/f1.jpg'), 'storage: U1 no sube fotos en la carpeta de otro cliente');
+select prueba.falla(format($q$insert into storage.objects (bucket_id, name) values ('imagenes', %L)$q$,
+  :'E1' || '/clientes/' || :'c1' || '/otra/f1.jpg'), 'storage: el cliente solo sube en su carpeta de progreso');
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.fotos_progreso (cliente_id, fecha, vista, storage_path) values (%L, current_date, 'frente', %L)$q$,
+  :'c1', :'ruta_progreso')) = 1, 'U1 registra su foto de progreso');
+select prueba.falla(format(
+  $q$insert into public.fotos_progreso (cliente_id, vista, storage_path) values (%L, 'frente', 'otra/ruta/x/progreso/f.jpg')$q$, :'c1'),
+  'la foto tiene que estar en la carpeta del entrenador de ese cliente');
+select prueba.falla(format(
+  $q$insert into public.fotos_progreso (cliente_id, vista, storage_path) values (%L, 'costado', %L)$q$, :'c1', :'ruta_progreso' || '2'),
+  'las vistas son frente, perfil o espalda');
+
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U1 ve el video de su entrenador');
-select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''imagenes''') = 1, 'storage: U1 ve solo su propia foto');
+-- Sus dos imágenes: la foto de la ficha y la de progreso. No la del otro cliente.
+select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''imagenes''') = 2, 'storage: U1 ve solo sus propias fotos');
 select prueba.falla(format($q$insert into storage.objects (bucket_id, name) values ('videos', %L)$q$, :'U1' || '/x.mp4'),
   'storage: un cliente no sube videos, ni a su propia carpeta');
 
@@ -351,6 +370,7 @@ select prueba.ok(prueba.filas('select 1 from public.sesion_series') = 0, 'E2 no 
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'E2 no ve mediciones de E1');
 select prueba.ok(prueba.filas('select 1 from public.cuestionarios') + prueba.filas('select 1 from public.checkins') = 0,
   'E2 no ve cuestionarios ni check-ins de clientes de E1');
+select prueba.ok(prueba.filas('select 1 from public.fotos_progreso') = 0, 'E2 no ve fotos de progreso de clientes de E1');
 select prueba.ok(prueba.filas('select 1 from public.metricas') = 7, 'E2 solo ve las predefinidas');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 1, 'E2 solo ve su perfil');
 select prueba.ok(prueba.filas('select 1 from storage.objects') = 0, 'storage: E2 no ve archivos de E1');
@@ -385,6 +405,7 @@ select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve 
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
 select prueba.ok(prueba.filas('select 1 from public.cuestionarios') + prueba.filas('select 1 from public.checkins') = 0,
   'U2 no ve el cuestionario ni los check-ins de U1');
+select prueba.ok(prueba.filas('select 1 from public.fotos_progreso') = 0, 'U2 no ve las fotos de progreso de U1');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U2 ve los videos de su entrenador');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''imagenes''') = 0, 'storage: U2 no ve la foto de U1');
 

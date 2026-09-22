@@ -1,24 +1,27 @@
 import { Link } from 'react-router'
 import { Aviso } from '../../components/Formulario.tsx'
+import { listarFotosProgreso } from '../../datos/fotosProgreso.ts'
 import { listarCheckins, obtenerCuestionario, PREGUNTAS_PARQ, semanaDe } from '../../datos/seguimiento.ts'
 import { formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
 import { TablaCheckins } from '../seguimiento/Checkins.tsx'
 
-// Cuestionario inicial (RF-13) y check-ins (RF-65) en la ficha del cliente.
+// Cuestionario inicial (RF-13), check-ins (RF-65) y fotos de progreso
+// (RF-64) en la ficha del cliente.
 export function SeguimientoCliente({ clienteId }: { clienteId: string }) {
   const { datos, error } = useConsulta(
     async () => ({
       cuestionario: await obtenerCuestionario(clienteId),
       checkins: await listarCheckins(clienteId, 4),
+      fotos: await listarFotosProgreso(clienteId),
     }),
     [clienteId],
   )
 
   if (error) return <Aviso tipo="error">{error}</Aviso>
   if (!datos) return null
-  const { cuestionario, checkins } = datos
+  const { cuestionario, checkins, fotos } = datos
   const respuestas = cuestionario?.respuestas
   const afirmativas = (respuestas?.parq ?? []).filter((r) => r === true).length
   const estaSemana = semanaDe()
@@ -65,6 +68,18 @@ export function SeguimientoCliente({ clienteId }: { clienteId: string }) {
         )}
         <Link to={`/checkins/${clienteId}`} className={`${styles.botonLink} ${styles.botonSecundario}`}>
           Ver todos
+        </Link>
+      </div>
+
+      <div className={styles.seccion}>
+        <h2>Fotos de progreso</h2>
+        <p className={styles.textoApagado}>
+          {fotos.length === 0
+            ? 'Todavía no hay fotos.'
+            : `${fotos.length === 1 ? '1 foto' : `${fotos.length} fotos`}, la última del ${formatearFecha(fotos[0].fecha)}.`}
+        </p>
+        <Link to={`/fotos/${clienteId}`} className={`${styles.botonLink} ${styles.botonSecundario}`}>
+          {fotos.length === 0 ? 'Agregar fotos' : 'Ver y comparar'}
         </Link>
       </div>
     </>
