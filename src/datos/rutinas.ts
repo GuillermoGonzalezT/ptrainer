@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.ts'
 import type { Json } from './database.types.ts'
+import { semanaActual, type Asignacion } from './programas.ts'
 
 // 1 = lunes … 7 = domingo, como en la base.
 export type Dia = 1 | 2 | 3 | 4 | 5 | 6 | 7
@@ -13,6 +14,9 @@ export type Rutina = {
   descripcion: string | null
   dias_semana: Dia[]
   archivada: boolean
+  // De qué programa y de qué semana salió esta copia (RF-34). null: suelta.
+  asignacion_id: string | null
+  semana: number | null
 }
 
 export type RutinaEnLista = Rutina & { ejercicios: number }
@@ -84,7 +88,8 @@ function db() {
   return supabase
 }
 
-const columnas = 'id, entrenador_id, cliente_id, plantilla_id, nombre, descripcion, dias_semana, archivada'
+const columnas =
+  'id, entrenador_id, cliente_id, plantilla_id, nombre, descripcion, dias_semana, archivada, asignacion_id, semana'
 
 function conConteo(filas: (Omit<Rutina, 'dias_semana'> & { dias_semana: number[]; rutina_ejercicios: { count: number }[] })[]) {
   return filas.map(({ rutina_ejercicios, ...r }) => ({
@@ -113,6 +118,20 @@ export async function listarRutinasDeCliente(clienteId: string): Promise<RutinaE
     .order('nombre')
   if (error) throw error
   return conConteo(data)
+}
+
+// RF-34: de un programa, solo la semana en curso. Las rutinas sueltas y las
+// de una asignación que ya terminó o todavía no arrancó no se muestran como
+// si fueran de hoy: las primeras sí, las segundas no.
+export function soloSemanaEnCurso<T extends Pick<Rutina, 'asignacion_id' | 'semana'>>(
+  rutinas: T[],
+  asignaciones: Pick<Asignacion, 'id' | 'inicia_el' | 'semanas'>[],
+): T[] {
+  return rutinas.filter((r) => {
+    if (r.asignacion_id === null) return true
+    const asignacion = asignaciones.find((a) => a.id === r.asignacion_id)
+    return asignacion !== undefined && semanaActual(asignacion) === r.semana
+  })
 }
 
 // Para el cliente: RLS ya devuelve solo las suyas, y nunca plantillas.

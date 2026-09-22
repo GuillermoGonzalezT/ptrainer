@@ -554,6 +554,134 @@ export type Database = {
         }
         Relationships: []
       }
+      programa_asignaciones: {
+        Row: {
+          cliente_id: string
+          created_at: string
+          id: string
+          inicia_el: string
+          nombre: string
+          programa_id: string
+          semanas: number
+        }
+        Insert: {
+          cliente_id: string
+          created_at?: string
+          id?: string
+          inicia_el: string
+          nombre: string
+          programa_id: string
+          semanas: number
+        }
+        Update: {
+          cliente_id?: string
+          created_at?: string
+          id?: string
+          inicia_el?: string
+          nombre?: string
+          programa_id?: string
+          semanas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programa_asignaciones_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programa_asignaciones_programa_id_fkey"
+            columns: ["programa_id"]
+            isOneToOne: false
+            referencedRelation: "programas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programa_rutinas: {
+        Row: {
+          ajuste_carga_pct: number
+          dias_semana: number[]
+          id: string
+          plantilla_id: string
+          programa_id: string
+          semana: number
+        }
+        Insert: {
+          ajuste_carga_pct?: number
+          dias_semana?: number[]
+          id?: string
+          plantilla_id: string
+          programa_id: string
+          semana: number
+        }
+        Update: {
+          ajuste_carga_pct?: number
+          dias_semana?: number[]
+          id?: string
+          plantilla_id?: string
+          programa_id?: string
+          semana?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programa_rutinas_plantilla_id_fkey"
+            columns: ["plantilla_id"]
+            isOneToOne: false
+            referencedRelation: "rutinas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "programa_rutinas_programa_id_fkey"
+            columns: ["programa_id"]
+            isOneToOne: false
+            referencedRelation: "programas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      programas: {
+        Row: {
+          archivado: boolean
+          created_at: string
+          descripcion: string | null
+          entrenador_id: string
+          id: string
+          nombre: string
+          semanas: number
+          updated_at: string
+        }
+        Insert: {
+          archivado?: boolean
+          created_at?: string
+          descripcion?: string | null
+          entrenador_id?: string
+          id?: string
+          nombre: string
+          semanas: number
+          updated_at?: string
+        }
+        Update: {
+          archivado?: boolean
+          created_at?: string
+          descripcion?: string | null
+          entrenador_id?: string
+          id?: string
+          nombre?: string
+          semanas?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "programas_entrenador_id_fkey"
+            columns: ["entrenador_id"]
+            isOneToOne: false
+            referencedRelation: "entrenadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rutina_ejercicios: {
         Row: {
           carga_kg: number | null
@@ -641,6 +769,7 @@ export type Database = {
       rutinas: {
         Row: {
           archivada: boolean
+          asignacion_id: string | null
           cliente_id: string | null
           created_at: string
           descripcion: string | null
@@ -649,10 +778,12 @@ export type Database = {
           id: string
           nombre: string
           plantilla_id: string | null
+          semana: number | null
           updated_at: string
         }
         Insert: {
           archivada?: boolean
+          asignacion_id?: string | null
           cliente_id?: string | null
           created_at?: string
           descripcion?: string | null
@@ -661,10 +792,12 @@ export type Database = {
           id?: string
           nombre: string
           plantilla_id?: string | null
+          semana?: number | null
           updated_at?: string
         }
         Update: {
           archivada?: boolean
+          asignacion_id?: string | null
           cliente_id?: string | null
           created_at?: string
           descripcion?: string | null
@@ -673,9 +806,17 @@ export type Database = {
           id?: string
           nombre?: string
           plantilla_id?: string | null
+          semana?: number | null
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "rutinas_asignacion_id_fkey"
+            columns: ["asignacion_id"]
+            isOneToOne: false
+            referencedRelation: "programa_asignaciones"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "rutinas_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -866,6 +1007,14 @@ export type Database = {
         Args: { p_cliente_ids: string[]; p_rutina_id: string }
         Returns: string[]
       }
+      asignar_programa: {
+        Args: {
+          p_cliente_ids: string[]
+          p_inicia_el: string
+          p_programa_id: string
+        }
+        Returns: string[]
+      }
       ejercicios_realizados: {
         Args: { p_cliente_id: string }
         Returns: {
@@ -894,6 +1043,10 @@ export type Database = {
         }[]
       }
       registrar_sesion: { Args: { p_sesion: Json }; Returns: string }
+      semana_actual: {
+        Args: { p_hoy?: string; p_inicia_el: string; p_semanas: number }
+        Returns: number
+      }
       ultima_vez: {
         Args: { p_cliente_id: string; p_ejercicio_ids: string[] }
         Returns: {

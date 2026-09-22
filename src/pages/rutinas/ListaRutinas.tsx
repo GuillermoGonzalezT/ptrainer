@@ -29,6 +29,13 @@ export function ListaRutinas() {
       <p className={pantalla.textoApagado}>
         Armá una rutina una vez y asignala a varios clientes. Las rutinas de cada cliente están en su ficha.
       </p>
+      <Link to="/programas" className={pantalla.fila}>
+        <span className={pantalla.filaTexto}>
+          <span className={pantalla.filaNombre}>Programas</span>
+          <span className={pantalla.filaDetalle}>Varias semanas seguidas, con progresión de carga</span>
+        </span>
+        <span aria-hidden="true">›</span>
+      </Link>
 
       {error && (
         <>

@@ -429,6 +429,83 @@ select prueba.ok(prueba.afectadas(format('update public.cliente_metricas set obj
 select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios where rutina_id = %L', :'plantilla')) = 1,
   'guardar: si algo falla no cambia nada');
 
+-- Programas por semanas (RF-34) -----------------------------------------------------
+
+insert into public.rutinas (entrenador_id, nombre, dias_semana) values (:'E1', 'Base del programa', '{2,5}')
+  returning id as plantilla_prog \gset
+-- Uno con carga en kilos y otro en % de 1RM: la carga es una o la otra.
+insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series, reps_min, carga_kg)
+  values (:'plantilla_prog', :'ej1', 0, 3, 5, 100);
+insert into public.rutina_ejercicios (rutina_id, ejercicio_id, orden, series, reps_min, carga_pct_1rm)
+  values (:'plantilla_prog', :'ej1', 1, 3, 5, 70);
+
+insert into public.programas (nombre, semanas) values ('Fuerza 4 semanas', 4) returning id as prog \gset
+select prueba.ok((select entrenador_id from public.programas where id = :'prog') = :'E1',
+  'programas: el entrenador_id sale de la sesión, no del pedido');
+
+insert into public.programa_rutinas (programa_id, semana, plantilla_id, dias_semana, ajuste_carga_pct)
+  values (:'prog', 1, :'plantilla_prog', '{2,5}', 0), (:'prog', 2, :'plantilla_prog', '{2,5}', 5);
+
+select prueba.falla(format(
+  $q$insert into public.programa_rutinas (programa_id, semana, plantilla_id) values (%L, 3, %L)$q$,
+  :'prog', :'r1'), 'programas: una rutina ya asignada a un cliente no entra en un programa');
+
+select public.asignar_programa(:'prog', array[:'c1']::uuid[], current_date - 7) as asig \gset
+select prueba.ok((select count(*) from public.rutinas where asignacion_id = :'asig') = 2,
+  'programas: al asignar se copia una rutina por semana');
+select prueba.ok((
+  select array_agg(semana order by semana) from public.rutinas where asignacion_id = :'asig'
+) = array[1, 2]::smallint[], 'programas: cada copia sabe de qué semana es');
+select prueba.ok((
+  select array_agg(re.carga_kg::text order by r.semana) filter (where re.carga_kg is not null)
+  from public.rutina_ejercicios re join public.rutinas r on r.id = re.rutina_id
+  where r.asignacion_id = :'asig'
+) = array['100.00', '105.00'], 'programas: la semana 2 se copia 5% más pesada');
+select prueba.ok((
+  select array_agg(re.carga_pct_1rm::text order by r.semana) filter (where re.carga_pct_1rm is not null)
+  from public.rutina_ejercicios re join public.rutinas r on r.id = re.rutina_id
+  where r.asignacion_id = :'asig'
+) = array['70.00', '73.50'], 'programas: el ajuste también corre sobre el % de 1RM');
+select prueba.ok((select nombre from public.programa_asignaciones where id = :'asig') = 'Fuerza 4 semanas',
+  'programas: la asignación guarda el nombre de ese momento');
+
+-- En qué semana está el cliente: sale de la fecha, no de un contador.
+select prueba.ok(public.semana_actual(current_date, 4::smallint) = 1, 'semana_actual: el día que arranca es la 1');
+select prueba.ok(public.semana_actual(current_date - 7, 4::smallint) = 2, 'semana_actual: a los 7 días es la 2');
+select prueba.ok(public.semana_actual(current_date - 27, 4::smallint) = 4, 'semana_actual: el último día es la 4');
+select prueba.ok(public.semana_actual(current_date + 1, 4::smallint) is null, 'semana_actual: antes de arrancar no hay semana');
+select prueba.ok(public.semana_actual(current_date - 28, 4::smallint) is null, 'semana_actual: terminado no hay semana');
+
+insert into public.programas (nombre, semanas) values ('Sin rutinas', 2) returning id as prog_vacio \gset
+select prueba.falla(format('select public.asignar_programa(%L, array[%L]::uuid[], current_date)', :'prog_vacio', :'c1'),
+  'programas: no se asigna un programa sin ninguna rutina');
+delete from public.programas where id = :'prog_vacio';
+
+-- Lo que ve el cliente del programa -------------------------------------------------
+
+reset role;
+select prueba.como(:'U1');
+set role authenticated;
+
+select prueba.ok(prueba.filas('select 1 from public.programa_asignaciones') = 1,
+  'programas: el cliente ve su asignación, para saber en qué semana está');
+select prueba.ok(prueba.filas('select 1 from public.programas') = 0,
+  'programas: el cliente no ve el programa del entrenador');
+select prueba.ok(prueba.filas('select 1 from public.programa_rutinas') = 0,
+  'programas: el cliente no ve cómo está armado el programa');
+select prueba.ok(prueba.afectadas('delete from public.programa_asignaciones') = 0,
+  'programas: el cliente no borra su asignación');
+
+reset role;
+select prueba.como(:'U2');
+set role authenticated;
+select prueba.ok(prueba.filas('select 1 from public.programa_asignaciones') = 0,
+  'programas: U2 no ve la asignación de U1');
+
+reset role;
+select prueba.como(:'E1');
+set role authenticated;
+
 -- E2 no ve nada de E1 --------------------------------------------------------------
 
 reset role;

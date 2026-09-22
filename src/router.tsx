@@ -30,6 +30,9 @@ import { CheckinSemanal } from './pages/seguimiento/CheckinSemanal.tsx'
 import { Checkins } from './pages/seguimiento/Checkins.tsx'
 import { Cuestionario } from './pages/seguimiento/Cuestionario.tsx'
 import { FotosProgreso } from './pages/seguimiento/FotosProgreso.tsx'
+import { AsignarPrograma } from './pages/programas/AsignarPrograma.tsx'
+import { EditorPrograma } from './pages/programas/EditorPrograma.tsx'
+import { ListaProgramas } from './pages/programas/ListaProgramas.tsx'
 import { ProgresoCliente } from './pages/progreso/ProgresoCliente.tsx'
 import { ProgresoEjercicio } from './pages/progreso/ProgresoEjercicio.tsx'
 import { AsignarPlantilla } from './pages/rutinas/AsignarPlantilla.tsx'
@@ -96,6 +99,10 @@ export const router = createHashRouter([
           { path: 'rutinas/nueva', element: <EditorRutina /> },
           { path: 'rutinas/:id', element: <EditorRutina /> },
           { path: 'rutinas/:id/asignar', element: <AsignarPlantilla /> },
+          { path: 'programas', element: <ListaProgramas /> },
+          { path: 'programas/nuevo', element: <EditorPrograma /> },
+          { path: 'programas/:id', element: <EditorPrograma /> },
+          { path: 'programas/:id/asignar', element: <AsignarPrograma /> },
           { path: 'metricas', element: <ListaMetricas /> },
           { path: 'metricas/nueva', element: <FormularioMetrica /> },
           { path: 'metricas/:id/editar', element: <FormularioMetrica /> },

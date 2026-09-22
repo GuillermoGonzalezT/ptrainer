@@ -1,7 +1,8 @@
 import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Aviso, Boton } from '../components/Formulario.tsx'
-import { diaDeHoy, misRutinas, nombreDia, type RutinaEnLista } from '../datos/rutinas.ts'
+import { listarAsignaciones, semanaActual } from '../datos/programas.ts'
+import { diaDeHoy, misRutinas, nombreDia, soloSemanaEnCurso, type RutinaEnLista } from '../datos/rutinas.ts'
 import { seriesHechas, sesionesSinTerminar } from '../entrenamiento/enCurso.ts'
 import { obtenerCheckin, obtenerCuestionario, semanaDe } from '../datos/seguimiento.ts'
 import { formatearDias } from '../lib/prescripcion.ts'
@@ -12,9 +13,17 @@ import styles from './Hoy.module.css'
 // RF-40: lo que le toca hoy arriba; el resto, abajo para elegir.
 export function Hoy() {
   const { rol } = useAuth()
-  const { datos: rutinas, error, cargando, recargar } = useConsulta(misRutinas, [])
+  // RF-34: de un programa solo se muestran las rutinas de la semana en curso.
+  const { datos, error, cargando, recargar } = useConsulta(async () => {
+    const [todas, asignaciones] = await Promise.all([misRutinas(), listarAsignaciones()])
+    return { rutinas: soloSemanaEnCurso(todas, asignaciones), asignaciones }
+  }, [])
+  const rutinas = datos?.rutinas
   const hoy = diaDeHoy()
 
+  const enCurso = (datos?.asignaciones ?? [])
+    .map((a) => ({ asignacion: a, semana: semanaActual(a) }))
+    .filter((x) => x.semana !== null)
   const deHoy = (rutinas ?? []).filter((r) => r.dias_semana.includes(hoy))
   const libres = (rutinas ?? []).filter((r) => r.dias_semana.length === 0)
   const otras = (rutinas ?? []).filter((r) => r.dias_semana.length > 0 && !r.dias_semana.includes(hoy))
@@ -50,6 +59,12 @@ export function Hoy() {
         </>
       )}
       {cargando && !error && <p className={pantalla.textoApagado}>Cargando…</p>}
+
+      {enCurso.map(({ asignacion, semana }) => (
+        <p key={asignacion.id} className={pantalla.textoApagado}>
+          {asignacion.nombre} · semana {semana} de {asignacion.semanas}
+        </p>
+      ))}
 
       {sinTerminar.map((s) => (
         <Link key={s.id} to={`/entrenar/${s.rutinaId}`} className={`${styles.tarjeta} ${styles.destacada}`}>

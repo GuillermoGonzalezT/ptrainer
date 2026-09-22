@@ -48,3 +48,8 @@ export function formatearDias(dias: Dia[], corto = false): string {
   const texto = nombres.length === 1 ? nombres[0] : `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`
   return texto[0].toUpperCase() + texto.slice(1)
 }
+
+// RF-34: el ajuste de carga de una semana del programa. "+5 %", "-10 %".
+export function formatearAjuste(pct: number): string {
+  return `${pct > 0 ? '+' : ''}${numero.format(pct)} %`
+}

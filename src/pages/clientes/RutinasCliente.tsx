@@ -1,34 +1,58 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { Aviso, Boton } from '../../components/Formulario.tsx'
-import { asignarPlantilla, listarPlantillas, listarRutinasDeCliente } from '../../datos/rutinas.ts'
+import {
+  borrarAsignacion,
+  listarAsignaciones,
+  semanaActual,
+  type Asignacion,
+} from '../../datos/programas.ts'
+import { asignarPlantilla, listarPlantillas, listarRutinasDeCliente, type RutinaEnLista } from '../../datos/rutinas.ts'
 import { mensajeDeError } from '../../lib/errores.ts'
+import { formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import styles from '../../styles/pantalla.module.css'
 import { FilaRutina } from '../rutinas/ListaRutinas.tsx'
 
 // Las rutinas de un cliente, dentro de su ficha (RF-32).
 export function RutinasCliente({ clienteId }: { clienteId: string }) {
-  const { datos: rutinas, error, recargar } = useConsulta(() => listarRutinasDeCliente(clienteId), [clienteId])
+  const { datos, error, recargar } = useConsulta(
+    async () => ({
+      rutinas: await listarRutinasDeCliente(clienteId),
+      asignaciones: await listarAsignaciones(clienteId),
+    }),
+    [clienteId],
+  )
   const [eligiendo, setEligiendo] = useState(false)
 
+  const rutinas = datos?.rutinas
   const activas = (rutinas ?? []).filter((r) => !r.archivada)
   const archivadas = (rutinas ?? []).filter((r) => r.archivada)
+  // Las de un programa se muestran aparte, agrupadas por semana (RF-34).
+  const sueltas = activas.filter((r) => r.asignacion_id === null)
 
   return (
     <div className={styles.seccion}>
       <h2>Rutinas</h2>
       {error && <Aviso tipo="error">{error}</Aviso>}
       {rutinas && activas.length === 0 && <p className={styles.textoApagado}>Todavía no tiene rutinas.</p>}
-      {activas.length > 0 && (
+      {sueltas.length > 0 && (
         <ul className={styles.lista}>
-          {activas.map((r) => (
+          {sueltas.map((r) => (
             <li key={r.id}>
               <FilaRutina rutina={r} />
             </li>
           ))}
         </ul>
       )}
+      {(datos?.asignaciones ?? []).map((a) => (
+        <Programa
+          key={a.id}
+          asignacion={a}
+          rutinas={activas.filter((r) => r.asignacion_id === a.id)}
+          alQuitar={recargar}
+        />
+      ))}
       {archivadas.length > 0 && (
         <details>
           <summary className={styles.textoApagado}>Archivadas ({archivadas.length})</summary>
@@ -121,5 +145,63 @@ function ElegirPlantilla({ clienteId, onListo, onCerrar }: { clienteId: string; 
         Cancelar
       </Boton>
     </>
+  )
+}
+
+// Un programa asignado, semana por semana, con la que corre hoy marcada.
+function Programa({
+  asignacion,
+  rutinas,
+  alQuitar,
+}: {
+  asignacion: Asignacion
+  rutinas: RutinaEnLista[]
+  alQuitar: () => void
+}) {
+  const [error, setError] = useState<string | null>(null)
+  const actual = semanaActual(asignacion)
+  const semanas = [...new Set(rutinas.map((r) => r.semana ?? 0))].sort((a, b) => a - b)
+
+  async function quitar() {
+    const aviso = `¿Sacarle el programa “${asignacion.nombre}”? Se borran sus ${rutinas.length} rutinas y lo que no haya entrenado todavía.`
+    if (!window.confirm(aviso)) return
+    try {
+      await borrarAsignacion(asignacion.id)
+      alQuitar()
+    } catch (e) {
+      setError(mensajeDeError(e))
+    }
+  }
+
+  return (
+    <div className={styles.seccion}>
+      <h3>{asignacion.nombre}</h3>
+      <p className={styles.textoApagado}>
+        {actual === null
+          ? `${asignacion.semanas} semanas · arranca el ${formatearFecha(asignacion.inicia_el)}`
+          : `Semana ${actual} de ${asignacion.semanas}`}
+      </p>
+      {error && <Aviso tipo="error">{error}</Aviso>}
+      {semanas.map((semana) => (
+        <div key={semana}>
+          <h4 className={styles.textoApagado}>
+            Semana {semana}
+            {semana === actual && ' · ahora'}
+          </h4>
+          <ul className={styles.lista}>
+            {rutinas
+              .filter((r) => r.semana === semana)
+              .map((r) => (
+                <li key={r.id}>
+                  <FilaRutina rutina={r} />
+                </li>
+              ))}
+          </ul>
+        </div>
+      ))}
+      <Boton type="button" variante="secundario" onClick={quitar}>
+        Sacarle este programa
+      </Boton>
+    </div>
   )
 }
