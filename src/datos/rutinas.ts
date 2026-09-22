@@ -33,7 +33,7 @@ export type Prescripcion = {
   notas: string | null
   // Ejercicios seguidos con el mismo número se hacen uno atrás del otro (RF-33).
   superserie: number | null
-  // Entrenamiento deportivo (RF-35): velocidad objetivo de la barra en m/s,
+  // Entrenamiento deportivo (RF-36): velocidad objetivo de la barra en m/s,
   // corte por pérdida de velocidad, y esfuerzo en palabras.
   velocidad_ms: number | null
   perdida_vel_pct: number | null

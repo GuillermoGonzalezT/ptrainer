@@ -25,7 +25,7 @@ export function detallesPrescripcion(p: Prescripcion): string[] {
   if (p.carga_pct_1rm !== null) partes.push(`${numero.format(p.carga_pct_1rm)} % 1RM`)
   if (p.rpe !== null) partes.push(`RPE ${numero.format(p.rpe)}`)
   if (p.rir !== null) partes.push(`RIR ${p.rir}`)
-  // RF-35: velocidad objetivo de la barra y corte por pérdida de velocidad.
+  // RF-36: velocidad objetivo de la barra y corte por pérdida de velocidad.
   if (p.velocidad_ms !== null) partes.push(`${numero.format(p.velocidad_ms)} m/s`)
   if (p.perdida_vel_pct !== null) partes.push(`cortar al perder ${p.perdida_vel_pct} %`)
   if (p.intensidad) partes.push(INTENSIDADES.find((i) => i.valor === p.intensidad)!.etiqueta.toLowerCase())

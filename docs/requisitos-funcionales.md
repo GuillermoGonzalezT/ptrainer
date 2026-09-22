@@ -78,6 +78,7 @@ Cada requisito indica su fase entre corchetes: **[F1]**, **[F2]** o **[F3]**.
 - **RF-33 [F2] Superseries y circuitos.** Agrupar dos o más ejercicios que se hacen seguidos, con descanso al final del grupo.
 - **RF-34 [F2] Programas por semanas.** Un programa agrupa rutinas en semanas o bloques, con progresión definida (por ejemplo, subir la carga un 2,5 % por semana). El cliente ve en qué semana está.
 - **RF-35 [F2] Duplicar** una rutina o un programa, para uno mismo o para otro cliente.
+- **RF-36 [F2] Velocidad e intensidad.** Para rutinas de entrenamiento deportivo y no solo de hipertrofia, cada ejercicio puede llevar además: velocidad objetivo de la barra en m/s, corte por pérdida de velocidad, e intensidad en una escala de palabras (suave, moderado, fuerte, máximo) para lo que no tiene barra ni 1RM. Son indicaciones del entrenador: al entrenar el cliente sigue anotando kilos y repeticiones.
 
 ### 5.5 Entrenamiento (cliente)
 

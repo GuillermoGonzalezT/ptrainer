@@ -194,7 +194,7 @@ export function ItemRutina({
   )
 }
 
-// RF-35: lo que hace falta para entrenamiento deportivo y no para
+// RF-36: lo que hace falta para entrenamiento deportivo y no para
 // hipertrofia. Va plegado salvo que el ejercicio ya tenga algo cargado, para
 // no alargar el formulario de siempre.
 function Deportivo({ item, onCambio }: { item: Borrador; onCambio: (parcial: Partial<Borrador>) => void }) {

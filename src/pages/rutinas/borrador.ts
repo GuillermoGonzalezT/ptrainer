@@ -21,7 +21,7 @@ export type Borrador = {
   notas: string
   // Superserie (RF-33): se hace seguido con el ejercicio de abajo.
   unidoConSiguiente: boolean
-  // Entrenamiento deportivo (RF-35).
+  // Entrenamiento deportivo (RF-36).
   velocidad: string
   perdidaVel: string
   intensidad: Intensidad | ''
