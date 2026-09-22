@@ -69,9 +69,10 @@ export function ItemRutina({
         <div className={styles.itemCuerpo}>
           <div className={styles.fila2}>
             <Campo
-              etiqueta="Series"
+              etiqueta={superserie ? 'Vueltas' : 'Series'}
               inputMode="numeric"
               required
+              ayuda={superserie ? `Las mismas para todo el bloque ${superserie[0]}.` : undefined}
               value={item.series}
               onChange={(e) => onCambio({ series: e.target.value })}
             />

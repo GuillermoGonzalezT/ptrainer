@@ -18,7 +18,15 @@ import { mensajeDeError } from '../../lib/errores.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import pantalla from '../../styles/pantalla.module.css'
 import { DuplicarRutina } from './DuplicarRutina.tsx'
-import { desdeGuardados, nuevo, numerarSuperseries, paraGuardar, type Borrador } from './borrador.ts'
+import {
+  cambiarBorrador,
+  desdeGuardados,
+  normalizarSeries,
+  nuevo,
+  numerarSuperseries,
+  paraGuardar,
+  type Borrador,
+} from './borrador.ts'
 import { ItemRutina } from './ItemRutina.tsx'
 import styles from './rutinas.module.css'
 import { SelectorEjercicio } from './SelectorEjercicio.tsx'
@@ -102,7 +110,7 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
   }
 
   function cambiarItem(clave: string, parcial: Partial<Borrador>) {
-    setItems((actuales) => actuales.map((b) => (b.clave === clave ? { ...b, ...parcial } : b)))
+    setItems((actuales) => cambiarBorrador(actuales, clave, parcial))
     setCambios(true)
   }
 
@@ -111,13 +119,14 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
       const copia = [...actuales]
       const destino = indice + direccion
       ;[copia[indice], copia[destino]] = [copia[destino], copia[indice]]
-      return copia
+      // Al reordenar puede cambiar quién queda unido con quién.
+      return normalizarSeries(copia)
     })
     setCambios(true)
   }
 
   function quitar(clave: string) {
-    setItems((actuales) => actuales.filter((b) => b.clave !== clave))
+    setItems((actuales) => normalizarSeries(actuales.filter((b) => b.clave !== clave)))
     setCambios(true)
   }
 

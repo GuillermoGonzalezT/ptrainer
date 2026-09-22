@@ -26,10 +26,14 @@ export type Borrador = {
 const texto = (n: number | null) => (n === null ? '' : String(n).replace('.', ','))
 
 export function desdeGuardados(items: EjercicioDeRutina[]): Borrador[] {
-  return items.map((item, i) => ({
-    ...desdeGuardado(item),
-    unidoConSiguiente: item.superserie !== null && items[i + 1]?.superserie === item.superserie,
-  }))
+  // Una rutina vieja puede traer un bloque con 3 series en un ejercicio y 4
+  // en otro; se muestra con las del primero, que es como se entrena.
+  return normalizarSeries(
+    items.map((item, i) => ({
+      ...desdeGuardado(item),
+      unidoConSiguiente: item.superserie !== null && items[i + 1]?.superserie === item.superserie,
+    })),
+  )
 }
 
 function desdeGuardado(item: EjercicioDeRutina): Omit<Borrador, 'unidoConSiguiente'> {
@@ -133,6 +137,40 @@ export function paraGuardar(borradores: Borrador[]): { items: ItemAGuardar[] } |
     }
   }
   return { items }
+}
+
+// Primer y último índice del tramo de ejercicios unidos al que pertenece
+// `indice`. Un ejercicio suelto es un tramo de uno solo.
+function bloqueDe(items: Pick<Borrador, 'unidoConSiguiente'>[], indice: number): [number, number] {
+  let inicio = indice
+  while (inicio > 0 && items[inicio - 1].unidoConSiguiente) inicio -= 1
+  let fin = indice
+  while (fin < items.length - 1 && items[fin].unidoConSiguiente) fin += 1
+  return [inicio, fin]
+}
+
+// Las series son del bloque entero: en una superserie o un circuito se hace
+// una vuelta de todos, así que no puede haber uno con 3 y otro con 4. Cada
+// tramo toma las del primero. Se usa al unir, al separar y al reordenar.
+export function normalizarSeries(items: Borrador[]): Borrador[] {
+  return items.map((b, i) => {
+    const [inicio] = bloqueDe(items, i)
+    return b.series === items[inicio].series ? b : { ...b, series: items[inicio].series }
+  })
+}
+
+// Un cambio en un ejercicio del editor. Las series se copian a todo su
+// bloque, venga el cambio del primero o del último.
+export function cambiarBorrador(items: Borrador[], clave: string, parcial: Partial<Borrador>): Borrador[] {
+  const indice = items.findIndex((b) => b.clave === clave)
+  if (indice === -1) return items
+
+  let resultado = items.map((b, i) => (i === indice ? { ...b, ...parcial } : b))
+  if (parcial.series !== undefined) {
+    const [inicio, fin] = bloqueDe(resultado, indice)
+    resultado = resultado.map((b, i) => (i >= inicio && i <= fin ? { ...b, series: parcial.series as string } : b))
+  }
+  return normalizarSeries(resultado)
 }
 
 // Los enlaces "unido con el siguiente" se convierten en números de
