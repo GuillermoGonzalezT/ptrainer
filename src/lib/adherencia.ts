@@ -3,7 +3,7 @@
 export const SEMANAS = 8
 
 // Lunes 00:00 (hora local) de la semana de `fecha`.
-function lunesDe(fecha: Date): Date {
+export function lunesDe(fecha: Date): Date {
   const lunes = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
   lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7))
   return lunes

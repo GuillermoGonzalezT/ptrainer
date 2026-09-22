@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Adherencia } from '../components/Adherencia.tsx'
 import { Encabezado } from '../components/Encabezado.tsx'
@@ -36,6 +37,12 @@ export function Progreso() {
         </p>
       )}
       {asignaciones && asignaciones.length > 0 && <ListaSeguimientos asignaciones={asignaciones} />}
+
+      {ficha && (
+        <p>
+          <Link to={`/checkins/${ficha.id}`}>Ver mis check-ins semanales</Link>
+        </p>
+      )}
 
       <h2 className={pantalla.subtitulo}>Ejercicios</h2>
       {ficha && <ListaEjerciciosRealizados clienteId={ficha.id} />}

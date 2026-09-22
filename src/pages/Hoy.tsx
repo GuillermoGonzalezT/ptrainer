@@ -3,6 +3,7 @@ import { useAuth } from '../auth/useAuth.ts'
 import { Aviso, Boton } from '../components/Formulario.tsx'
 import { diaDeHoy, misRutinas, nombreDia, type RutinaEnLista } from '../datos/rutinas.ts'
 import { seriesHechas, sesionesSinTerminar } from '../entrenamiento/enCurso.ts'
+import { obtenerCheckin, obtenerCuestionario, semanaDe } from '../datos/seguimiento.ts'
 import { formatearDias } from '../lib/prescripcion.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import pantalla from '../styles/pantalla.module.css'
@@ -22,6 +23,16 @@ export function Hoy() {
   // solo de esta cuenta: el teléfono puede ser compartido.
   const misFichas = new Set(rol?.fichas.map((f) => f.id))
   const sinTerminar = sesionesSinTerminar().filter((s) => misFichas.has(s.clienteId))
+  // Cuestionario inicial (RF-13) y check-in de la semana (RF-65).
+  const ficha = rol?.fichas.find((f) => f.estado !== 'baja')
+  const { datos: seguimiento } = useConsulta(async () => {
+    if (!ficha) return null
+    const [cuestionario, checkin] = await Promise.all([
+      obtenerCuestionario(ficha.id),
+      obtenerCheckin(ficha.id, semanaDe()),
+    ])
+    return { faltaCuestionario: !cuestionario?.completado_en, faltaCheckin: checkin === null }
+  }, [ficha?.id])
 
   return (
     <section className={pantalla.pantalla}>
@@ -48,6 +59,19 @@ export function Hoy() {
           </span>
         </Link>
       ))}
+
+      {ficha && seguimiento?.faltaCuestionario && (
+        <Link to={`/cuestionario/${ficha.id}`} className={styles.tarjeta}>
+          <span className={styles.tarjetaNombre}>Completá tu cuestionario inicial</span>
+          <span className={styles.tarjetaDetalle}>Antecedentes, experiencia y disponibilidad. Son unos minutos.</span>
+        </Link>
+      )}
+      {ficha && seguimiento?.faltaCheckin && (
+        <Link to={`/checkin/${ficha.id}`} className={styles.tarjeta}>
+          <span className={styles.tarjetaNombre}>Check-in de la semana</span>
+          <span className={styles.tarjetaDetalle}>Cómo venís durmiendo, tu energía y cuánto cumpliste el plan.</span>
+        </Link>
+      )}
 
       {rutinas && rutinas.length === 0 && (
         <div className={pantalla.vacio}>

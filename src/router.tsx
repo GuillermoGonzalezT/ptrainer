@@ -26,6 +26,9 @@ import { DetalleMetrica } from './pages/metricas/DetalleMetrica.tsx'
 import { FormularioMetrica } from './pages/metricas/FormularioMetrica.tsx'
 import { ListaMetricas } from './pages/metricas/ListaMetricas.tsx'
 import { Seguimiento } from './pages/metricas/Seguimiento.tsx'
+import { CheckinSemanal } from './pages/seguimiento/CheckinSemanal.tsx'
+import { Checkins } from './pages/seguimiento/Checkins.tsx'
+import { Cuestionario } from './pages/seguimiento/Cuestionario.tsx'
 import { ProgresoCliente } from './pages/progreso/ProgresoCliente.tsx'
 import { ProgresoEjercicio } from './pages/progreso/ProgresoEjercicio.tsx'
 import { AsignarPlantilla } from './pages/rutinas/AsignarPlantilla.tsx'
@@ -70,6 +73,11 @@ export const router = createHashRouter([
       { path: 'seguimiento/:id', element: <Seguimiento /> },
       // Progreso de un ejercicio de un cliente (RF-60): lo ven los dos.
       { path: 'progreso/:clienteId/:ejercicioId', element: <ProgresoEjercicio /> },
+      // Cuestionario inicial (RF-13) y check-ins (RF-65): los ven el cliente
+      // y su entrenador.
+      { path: 'cuestionario/:clienteId', element: <Cuestionario /> },
+      { path: 'checkins/:clienteId', element: <Checkins /> },
+      { path: 'checkin/:clienteId', element: <CheckinSemanal /> },
       {
         element: <SoloEntrenador />,
         children: [

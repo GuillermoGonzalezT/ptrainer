@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      checkins: {
+        Row: {
+          cliente_id: string
+          comentario: string | null
+          created_at: string
+          cumplimiento: number | null
+          energia: number | null
+          estres: number | null
+          id: string
+          registrado_por: string | null
+          semana: string
+          sueno: number | null
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          comentario?: string | null
+          created_at?: string
+          cumplimiento?: number | null
+          energia?: number | null
+          estres?: number | null
+          id?: string
+          registrado_por?: string | null
+          semana: string
+          sueno?: number | null
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          comentario?: string | null
+          created_at?: string
+          cumplimiento?: number | null
+          energia?: number | null
+          estres?: number | null
+          id?: string
+          registrado_por?: string | null
+          semana?: string
+          sueno?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkins_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cliente_metricas: {
         Row: {
           cliente_id: string
@@ -121,6 +178,35 @@ export type Database = {
             columns: ["usuario_id"]
             isOneToOne: false
             referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cuestionarios: {
+        Row: {
+          cliente_id: string
+          completado_en: string | null
+          respuestas: Json
+          updated_at: string
+        }
+        Insert: {
+          cliente_id: string
+          completado_en?: string | null
+          respuestas?: Json
+          updated_at?: string
+        }
+        Update: {
+          cliente_id?: string
+          completado_en?: string | null
+          respuestas?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cuestionarios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: true
+            referencedRelation: "clientes"
             referencedColumns: ["id"]
           },
         ]

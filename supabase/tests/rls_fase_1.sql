@@ -247,6 +247,26 @@ select prueba.falla(format($q$insert into public.mediciones (cliente_metrica_id,
 select prueba.ok(prueba.afectadas(format($q$update public.mediciones set nota = 'x' where cliente_metrica_id = %L and registrada_por = %L$q$, :'cm1', :'E1')) = 0,
   'U1 no edita mediciones que cargó el entrenador');
 
+-- Cuestionario inicial (RF-13) y check-in semanal (RF-65)
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.cuestionarios (cliente_id, respuestas, completado_en) values (%L, '{"parq": {"p1": false}, "experiencia": "2 años"}', now())$q$, :'c1')) = 1,
+  'U1 completa su cuestionario inicial');
+select prueba.falla(format($q$insert into public.cuestionarios (cliente_id, respuestas) values (%L, '{}')$q$, :'c2'),
+  'U1 no completa el cuestionario de otro cliente');
+select prueba.falla(format($q$insert into public.cuestionarios (cliente_id, respuestas) values (%L, '[]')$q$, :'c1'),
+  'el cuestionario tiene que ser un objeto JSON');
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.checkins (cliente_id, semana, sueno, estres, energia, cumplimiento, comentario)
+     values (%L, date_trunc('week', current_date), 4, 2, 4, 5, 'Semana tranquila')$q$, :'c1')) = 1,
+  'U1 registra su check-in de la semana');
+select prueba.falla(format(
+  $q$insert into public.checkins (cliente_id, semana, sueno) values (%L, date_trunc('week', current_date), 4)$q$, :'c1'),
+  'no hay dos check-ins de la misma semana');
+select prueba.falla(format($q$insert into public.checkins (cliente_id, semana, sueno) values (%L, current_date, 9)$q$, :'c1'),
+  'las escalas del check-in van de 1 a 5');
+select prueba.falla(format($q$insert into public.checkins (cliente_id, semana, registrado_por) values (%L, current_date, %L)$q$, :'c1', :'E1'),
+  'el check-in queda a nombre de quien lo carga');
+
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U1 ve el video de su entrenador');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''imagenes''') = 1, 'storage: U1 ve solo su propia foto');
 select prueba.falla(format($q$insert into storage.objects (bucket_id, name) values ('videos', %L)$q$, :'U1' || '/x.mp4'),
@@ -329,6 +349,8 @@ select prueba.ok(prueba.filas('select 1 from public.rutinas') = 0, 'E2 no ve rut
 select prueba.ok(prueba.filas('select 1 from public.sesiones') = 0, 'E2 no ve sesiones de E1');
 select prueba.ok(prueba.filas('select 1 from public.sesion_series') = 0, 'E2 no ve series de E1');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'E2 no ve mediciones de E1');
+select prueba.ok(prueba.filas('select 1 from public.cuestionarios') + prueba.filas('select 1 from public.checkins') = 0,
+  'E2 no ve cuestionarios ni check-ins de clientes de E1');
 select prueba.ok(prueba.filas('select 1 from public.metricas') = 7, 'E2 solo ve las predefinidas');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 1, 'E2 solo ve su perfil');
 select prueba.ok(prueba.filas('select 1 from storage.objects') = 0, 'storage: E2 no ve archivos de E1');
@@ -361,6 +383,8 @@ select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_si
 select prueba.ok(prueba.afectadas('update public.cliente_metricas set objetivo = 1') = 0, 'un cliente no cambia sus objetivos');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
+select prueba.ok(prueba.filas('select 1 from public.cuestionarios') + prueba.filas('select 1 from public.checkins') = 0,
+  'U2 no ve el cuestionario ni los check-ins de U1');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U2 ve los videos de su entrenador');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''imagenes''') = 0, 'storage: U2 no ve la foto de U1');
 

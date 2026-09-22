@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.ts'
 import { listarClientes, type Cliente } from './clientes.ts'
+import { clientesConCheckin, semanaDe } from './seguimiento.ts'
 
 // Datos del panel de inicio del entrenador (RF-70). RLS ya limita todo a sus
 // clientes.
@@ -36,6 +37,8 @@ export type MedicionNueva = {
 
 export type Panel = {
   umbral: number
+  // Clientes activos que todavía no hicieron el check-in de esta semana (RF-65).
+  sinCheckin: Pick<Cliente, 'id' | 'nombre'>[]
   sesionesSemana: number
   clientesActivos: number
   paraRevisar: SesionParaRevisar[]
@@ -55,7 +58,7 @@ function diasDesde(fecha: string): number {
 }
 
 export async function cargarPanel(entrenadorId: string): Promise<Panel> {
-  const [entrenador, sesiones, clientes, ultimos, mediciones] = await Promise.all([
+  const [entrenador, sesiones, clientes, ultimos, mediciones, conCheckin] = await Promise.all([
     db().from('entrenadores').select('dias_sin_entrenar').eq('id', entrenadorId).single(),
     db()
       .from('sesiones')
@@ -71,6 +74,7 @@ export async function cargarPanel(entrenadorId: string): Promise<Panel> {
       .neq('registrada_por', entrenadorId)
       .order('created_at', { ascending: false })
       .limit(20),
+    clientesConCheckin(semanaDe()),
   ])
   if (entrenador.error) throw entrenador.error
   if (sesiones.error) throw sesiones.error
@@ -83,6 +87,7 @@ export async function cargarPanel(entrenadorId: string): Promise<Panel> {
 
   return {
     umbral,
+    sinCheckin: activos.filter((c) => !conCheckin.has(c.id)).map((c) => ({ id: c.id, nombre: c.nombre })),
     sesionesSemana: sesiones.data.filter((s) => diasDesde(s.iniciada_en) < 7).length,
     clientesActivos: activos.length,
     // Las que registró el cliente y todavía no tienen devolución. Las que

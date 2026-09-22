@@ -22,6 +22,7 @@ import { InvitacionCliente } from './InvitacionCliente.tsx'
 import { MetricasCliente } from './MetricasCliente.tsx'
 import { NotasCliente } from './NotasCliente.tsx'
 import { RutinasCliente } from './RutinasCliente.tsx'
+import { SeguimientoCliente } from './SeguimientoCliente.tsx'
 import { SesionesCliente } from './SesionesCliente.tsx'
 
 export function FichaCliente() {
@@ -65,6 +66,7 @@ export function FichaCliente() {
       <Adherencia clienteId={cliente.id} />
       <SesionesCliente clienteId={cliente.id} />
       <MetricasCliente clienteId={cliente.id} />
+      <SeguimientoCliente clienteId={cliente.id} />
       <Datos cliente={cliente} />
       <Estado cliente={cliente} alCambiar={recargar} />
       <NotasCliente clienteId={cliente.id} />

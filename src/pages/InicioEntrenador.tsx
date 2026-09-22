@@ -56,6 +56,7 @@ export function InicioEntrenador() {
           ) : (
             <>
               <ParaRevisar panel={panel} />
+              <CheckinsPendientes panel={panel} />
               <SinEntrenar panel={panel} entrenadorId={uid} alCambiar={recargar} />
               <MedicionesNuevas panel={panel} />
             </>
@@ -96,6 +97,41 @@ function ParaRevisar({ panel }: { panel: Panel }) {
           </ul>
         </>
       )}
+    </div>
+  )
+}
+
+// RF-65: a quién le falta el check-in de esta semana.
+function CheckinsPendientes({ panel }: { panel: Panel }) {
+  if (panel.sinCheckin.length === 0) {
+    return (
+      <div className={pantalla.seccion}>
+        <div className={styles.titulo}>
+          <h2>Check-ins</h2>
+        </div>
+        <p className={pantalla.textoApagado}>Todos tus clientes activos hicieron el check-in de esta semana.</p>
+      </div>
+    )
+  }
+  return (
+    <div className={pantalla.seccion}>
+      <div className={styles.titulo}>
+        <h2>Check-ins pendientes</h2>
+        <span className={styles.contador}>{panel.sinCheckin.length}</span>
+      </div>
+      <p className={pantalla.textoApagado}>Les falta el de esta semana.</p>
+      <ul className={pantalla.lista}>
+        {panel.sinCheckin.map((c) => (
+          <li key={c.id}>
+            <Link to={`/checkin/${c.id}`} className={pantalla.fila}>
+              <span className={pantalla.filaTexto}>
+                <span className={pantalla.filaNombre}>{c.nombre}</span>
+                <span className={pantalla.filaDetalle}>Cargarlo con el cliente</span>
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
