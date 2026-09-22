@@ -21,6 +21,7 @@ export type Database = {
           created_at: string
           id: string
           metrica_id: string
+          objetivo: number | null
         }
         Insert: {
           cliente_id: string
@@ -28,6 +29,7 @@ export type Database = {
           created_at?: string
           id?: string
           metrica_id: string
+          objetivo?: number | null
         }
         Update: {
           cliente_id?: string
@@ -35,6 +37,7 @@ export type Database = {
           created_at?: string
           id?: string
           metrica_id?: string
+          objetivo?: number | null
         }
         Relationships: [
           {
@@ -434,6 +437,7 @@ export type Database = {
           rutina_id: string
           segundos: number | null
           series: number
+          superserie: number | null
           tempo: string | null
         }
         Insert: {
@@ -452,6 +456,7 @@ export type Database = {
           rutina_id: string
           segundos?: number | null
           series: number
+          superserie?: number | null
           tempo?: string | null
         }
         Update: {
@@ -470,6 +475,7 @@ export type Database = {
           rutina_id?: string
           segundos?: number | null
           series?: number
+          superserie?: number | null
           tempo?: string | null
         }
         Relationships: [

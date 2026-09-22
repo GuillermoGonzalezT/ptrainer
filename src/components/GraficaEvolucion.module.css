@@ -97,3 +97,17 @@
   clip-path: inset(50%);
   white-space: nowrap;
 }
+
+/* Línea de referencia (objetivo): fina, sólida y en tinta de texto, para que
+   no compita con los datos. */
+.referencia {
+  stroke: var(--color-text-muted);
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
+
+.referenciaTexto {
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--color-text-muted);
+}

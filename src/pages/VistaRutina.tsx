@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Encabezado } from '../components/Encabezado.tsx'
 import { Aviso } from '../components/Formulario.tsx'
-import { obtenerRutina } from '../datos/rutinas.ts'
+import { etiquetasSuperserie, obtenerRutina } from '../datos/rutinas.ts'
 import { detallesPrescripcion, formatearDias, formatearVolumen } from '../lib/prescripcion.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import pantalla from '../styles/pantalla.module.css'
@@ -27,12 +27,20 @@ export function VistaRutina() {
     )
   }
 
+  const etiquetas = etiquetasSuperserie(rutina.items)
+
   return (
     <section className={pantalla.pantalla}>
       <Encabezado titulo={rutina.nombre} volver={volver} />
       <p className={pantalla.textoApagado}>{formatearDias(rutina.dias_semana)}</p>
       {rutina.descripcion && <p className={pantalla.notaTexto}>{rutina.descripcion}</p>}
 
+      {etiquetas.some(Boolean) && (
+        <p className={pantalla.textoApagado}>
+          Los ejercicios con la misma letra (A1, A2…) van en superserie: una serie de cada uno, seguidos, y el
+          descanso al terminar la vuelta.
+        </p>
+      )}
       <ol className={styles.ejercicios}>
         {rutina.items.map((item, i) => {
           const detalles = detallesPrescripcion(item)
@@ -41,7 +49,10 @@ export function VistaRutina() {
               <span className={styles.numero}>{i + 1}</span>
               <div className={styles.cuerpo}>
                 <Link to={`/ejercicios/${item.ejercicio.id}`} className={styles.nombre}>
-                  {item.ejercicio.nombre}
+                  <span>
+                    {etiquetas[i] && <span className={styles.superserie}>{etiquetas[i]}</span>}
+                    {item.ejercicio.nombre}
+                  </span>
                   <span className={styles.verVideo}>Ver cómo se hace ›</span>
                 </Link>
                 <p className={styles.volumen}>{formatearVolumen(item)}</p>

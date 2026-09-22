@@ -8,6 +8,7 @@ import { obtenerCliente } from '../../datos/clientes.ts'
 import {
   archivarRutina,
   crearRutina,
+  etiquetasSuperserie,
   guardarRutina,
   obtenerRutina,
   type Dia,
@@ -16,7 +17,8 @@ import {
 import { mensajeDeError } from '../../lib/errores.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import pantalla from '../../styles/pantalla.module.css'
-import { desdeGuardado, nuevo, paraGuardar, type Borrador } from './borrador.ts'
+import { DuplicarRutina } from './DuplicarRutina.tsx'
+import { desdeGuardados, nuevo, numerarSuperseries, paraGuardar, type Borrador } from './borrador.ts'
 import { ItemRutina } from './ItemRutina.tsx'
 import styles from './rutinas.module.css'
 import { SelectorEjercicio } from './SelectorEjercicio.tsx'
@@ -64,9 +66,10 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
   const [nombre, setNombre] = useState(rutina?.nombre ?? '')
   const [descripcion, setDescripcion] = useState(rutina?.descripcion ?? '')
   const [dias, setDias] = useState<Dia[]>(rutina?.dias_semana ?? [])
-  const [items, setItems] = useState<Borrador[]>(() => rutina?.items.map(desdeGuardado) ?? [])
+  const [items, setItems] = useState<Borrador[]>(() => (rutina ? desdeGuardados(rutina.items) : []))
   const [abierto, setAbierto] = useState<string | null>(null)
   const [eligiendo, setEligiendo] = useState(false)
+  const [duplicando, setDuplicando] = useState(false)
   const [cambios, setCambios] = useState(false)
   const [guardando, setGuardando] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -161,6 +164,9 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
     }
   }
 
+  const numerosSuperserie = numerarSuperseries(items)
+  const etiquetas = etiquetasSuperserie(numerosSuperserie.map((superserie) => ({ superserie })))
+
   const titulo = rutina ? rutina.nombre : esPlantilla ? 'Nueva plantilla' : `Rutina para ${cliente?.nombre}`
 
   return (
@@ -209,6 +215,8 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
               <ItemRutina
                 key={b.clave}
                 numero={i + 1}
+                superserie={etiquetas[i]}
+                sinDescanso={numerosSuperserie[i] !== null && numerosSuperserie[i + 1] === numerosSuperserie[i]}
                 item={b}
                 abierto={abierto === b.clave}
                 esPrimero={i === 0}
@@ -250,11 +258,15 @@ function Editor({ rutina, cliente, alGuardar }: Props) {
               Registrar una sesión
             </Link>
           )}
+          <Boton type="button" variante="secundario" onClick={() => setDuplicando(true)}>
+            Duplicar
+          </Boton>
           <Boton type="button" variante="secundario" onClick={alternarArchivo}>
             {rutina.archivada ? 'Sacar de archivadas' : 'Archivar'}
           </Boton>
         </div>
       )}
+      {rutina && !cambios && duplicando && <DuplicarRutina rutina={rutina} onCerrar={() => setDuplicando(false)} />}
     </section>
   )
 }

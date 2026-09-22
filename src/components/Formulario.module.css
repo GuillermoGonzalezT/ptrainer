@@ -2,6 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1);
+  /* Dentro de una grilla de columnas, el campo se achica en vez de desbordar. */
+  min-width: 0;
 }
 
 .etiqueta {
@@ -11,6 +13,8 @@
 
 /* 16px de letra: con menos, Safari en iPhone hace zoom al enfocar el campo. */
 .input {
+  width: 100%;
+  min-width: 0;
   min-height: var(--tap-min);
   padding: 0 var(--space-3);
   font: inherit;

@@ -31,6 +31,8 @@ export type Prescripcion = {
   tempo: string | null
   pedir_rpe: boolean
   notas: string | null
+  // Ejercicios seguidos con el mismo número se hacen uno atrás del otro (RF-33).
+  superserie: number | null
 }
 
 export type EjercicioDeRutina = Prescripcion & {
@@ -116,7 +118,7 @@ export async function obtenerRutina(id: string): Promise<RutinaCompleta | null> 
     .from('rutinas')
     .select(
       `${columnas}, rutina_ejercicios(id, orden, series, reps_min, reps_max, segundos, carga_kg,
-       carga_pct_1rm, descanso_s, rpe, rir, tempo, pedir_rpe, notas,
+       carga_pct_1rm, descanso_s, rpe, rir, tempo, pedir_rpe, notas, superserie,
        ejercicios(id, nombre, grupo_muscular, archivado))`,
     )
     .eq('id', id)
@@ -158,6 +160,33 @@ export async function guardarRutina(id: string, datos: DatosRutina, items: ItemA
   if (guardado.error) throw guardado.error
 }
 
+// Copia una rutina como plantilla (clienteId null) o para un cliente
+// (RF-35). Son dos pasos: si falla el segundo, se borra la copia a medias.
+export async function duplicarRutina(
+  entrenadorId: string,
+  rutina: RutinaCompleta,
+  clienteId: string | null,
+): Promise<string> {
+  const mismoLugar = clienteId === rutina.cliente_id
+  const datos: DatosRutina = {
+    nombre: mismoLugar ? `${rutina.nombre} (copia)`.slice(0, 120) : rutina.nombre,
+    descripcion: rutina.descripcion,
+    dias_semana: rutina.dias_semana,
+  }
+  const items: ItemAGuardar[] = rutina.items.map(({ id: _id, orden: _orden, ejercicio, ...prescripcion }) => ({
+    ...prescripcion,
+    ejercicio_id: ejercicio.id,
+  }))
+  const nuevaId = await crearRutina(entrenadorId, clienteId, datos)
+  try {
+    await guardarRutina(nuevaId, datos, items)
+  } catch (e) {
+    await db().from('rutinas').delete().eq('id', nuevaId)
+    throw e
+  }
+  return nuevaId
+}
+
 export async function archivarRutina(id: string, archivada: boolean): Promise<void> {
   const { error } = await db().from('rutinas').update({ archivada }).eq('id', id)
   if (error) throw error
@@ -174,4 +203,28 @@ export async function asignarPlantilla(plantillaId: string, clienteIds: string[]
   if (copias.length === 0) return
   const actualizacion = await db().from('rutinas').update({ dias_semana: dias }).in('id', copias)
   if (actualizacion.error) throw actualizacion.error
+}
+
+// Etiquetas de superserie al estilo gimnasio: A1, A2 para la primera, B1, B2
+// para la segunda… null para los ejercicios que van solos.
+export function etiquetasSuperserie(items: Pick<Prescripcion, 'superserie'>[]): (string | null)[] {
+  const etiquetas: (string | null)[] = []
+  let letra = -1
+  let posicion = 0
+  items.forEach((item, i) => {
+    const ss = item.superserie
+    const conAnterior = ss !== null && i > 0 && items[i - 1].superserie === ss
+    const conSiguiente = ss !== null && i < items.length - 1 && items[i + 1].superserie === ss
+    if (!conAnterior && !conSiguiente) {
+      etiquetas.push(null)
+      return
+    }
+    if (!conAnterior) {
+      letra += 1
+      posicion = 0
+    }
+    posicion += 1
+    etiquetas.push(`${String.fromCharCode(65 + (letra % 26))}${posicion}`)
+  })
+  return etiquetas
 }

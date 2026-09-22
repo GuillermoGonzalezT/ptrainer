@@ -1,0 +1,49 @@
+.volver {
+  align-self: flex-start;
+  min-height: 40px;
+  margin-top: calc(var(--space-3) * -1);
+  padding: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--color-accent-strong);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.resultado {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+/* Columnas de números alineadas: acá sí van cifras tabulares. */
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla th {
+  padding: var(--space-1) 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabla td {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.tabla th:last-child,
+.tabla td:last-child {
+  text-align: right;
+}

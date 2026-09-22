@@ -292,6 +292,25 @@ select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios whe
   'guardar: borra los que se quitaron');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[{"ejercicio_id": "%s", "series": 0}]')$q$, :'plantilla', :'ej1'),
   'guardar: respeta los checks (series 0)');
+
+-- Superseries (RF-33): se guardan y se copian al asignar.
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('id', :'re1', 'ejercicio_id', :'ej1', 'series', 4, 'reps_min', 6, 'reps_max', 8, 'superserie', 1),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 3, 'reps_min', 12, 'superserie', 1)
+));
+select prueba.ok((select count(*) from public.rutina_ejercicios where rutina_id = :'plantilla' and superserie = 1) = 2,
+  'superseries: guardar_ejercicios_rutina guarda la superserie');
+select public.asignar_plantilla(:'plantilla', array[:'c2']::uuid[]) as copia_ss \gset
+select prueba.ok((select count(*) from public.rutina_ejercicios where rutina_id = :'copia_ss' and superserie = 1) = 2,
+  'superseries: asignar_plantilla copia la superserie');
+delete from public.rutinas where id = :'copia_ss';
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('id', :'re1', 'ejercicio_id', :'ej1', 'series', 4, 'reps_min', 6, 'reps_max', 8)
+));
+
+-- Objetivo por métrica (RF-56)
+select prueba.ok(prueba.afectadas(format('update public.cliente_metricas set objetivo = 50 where id = %L', :'cm1')) = 1,
+  'objetivo: el entrenador fija el objetivo de una métrica de su cliente');
 select prueba.ok(prueba.filas(format('select 1 from public.rutina_ejercicios where rutina_id = %L', :'plantilla')) = 1,
   'guardar: si algo falla no cambia nada');
 
@@ -339,6 +358,7 @@ select prueba.ok(prueba.filas(format('select 1 from public.ultima_vez(%L, array[
 select prueba.ok(prueba.filas(format('select 1 from public.progreso_ejercicio(%L, %L)', :'c1', :'ej1')) = 0, 'U2 no ve el progreso de U1');
 select prueba.falla(format($q$select public.guardar_ejercicios_rutina(%L, '[]')$q$, :'plantilla'), 'un cliente no edita rutinas');
 select prueba.ok(prueba.afectadas(format('update public.entrenadores set dias_sin_entrenar = 30 where id = %L', :'E1')) = 0, 'un cliente no cambia el umbral de su entrenador');
+select prueba.ok(prueba.afectadas('update public.cliente_metricas set objetivo = 1') = 0, 'un cliente no cambia sus objetivos');
 select prueba.ok(prueba.filas('select 1 from public.mediciones') = 0, 'U2 no ve las mediciones de U1');
 select prueba.ok(prueba.filas('select 1 from public.perfiles') = 2, 'U2 no ve el perfil de U1');
 select prueba.ok(prueba.filas('select 1 from storage.objects where bucket_id = ''videos''') = 1, 'storage: U2 ve los videos de su entrenador');

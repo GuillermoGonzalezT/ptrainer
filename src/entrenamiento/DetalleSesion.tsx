@@ -8,14 +8,19 @@ import { mensajeDeError } from '../lib/errores.ts'
 import { formatearFechaHora } from '../lib/formato.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import pantalla from '../styles/pantalla.module.css'
+import { conUnidad } from '../pages/metricas/formato.ts'
+import type { RecordPersonal } from './enCurso.ts'
 import { formatearDuracion, formatearSerie } from './formato.ts'
+import styles from './entrenamiento.module.css'
 
 // Una sesión registrada (RF-46) con la devolución del entrenador (RF-61).
 export function DetalleSesion() {
   const { id = '' } = useParams()
   const { session, tipo } = useAuth()
   const navigate = useNavigate()
-  const aviso = (useLocation().state as { aviso?: string } | null)?.aviso
+  const estado = useLocation().state as { aviso?: string; records?: RecordPersonal[] } | null
+  const aviso = estado?.aviso
+  const records = estado?.records ?? []
   const { datos: sesion, error, cargando, recargar } = useConsulta(() => obtenerSesion(id), [id])
   const [errorBorrar, setErrorBorrar] = useState<string | null>(null)
 
@@ -48,6 +53,19 @@ export function DetalleSesion() {
     <section className={pantalla.pantalla}>
       <Encabezado titulo={sesion.rutina_nombre} volver={volver} />
       {aviso && <Aviso tipo="info">{aviso}</Aviso>}
+      {records.length > 0 && (
+        <div className={styles.records} role="status">
+          <strong>{records.length === 1 ? '¡Nuevo récord!' : `¡${records.length} récords nuevos!`}</strong>
+          <ul>
+            {records.map((r) => (
+              <li key={r.nombre}>
+                {r.nombre}: {conUnidad(r.peso, 'kg')}
+                <span className={pantalla.textoApagado}> (antes {conUnidad(r.anterior, 'kg')})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className={pantalla.seccion}>
         <dl className={pantalla.datos}>
           {esEntrenador && sesion.cliente && (

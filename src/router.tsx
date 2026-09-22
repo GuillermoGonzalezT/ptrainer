@@ -4,6 +4,7 @@ import { DetalleSesion } from './entrenamiento/DetalleSesion.tsx'
 import { Entrenar } from './entrenamiento/Entrenar.tsx'
 import { Historial } from './entrenamiento/Historial.tsx'
 import { AuthLayout } from './layouts/AuthLayout.tsx'
+import { Calculadoras } from './pages/Calculadoras.tsx'
 import { Inicio } from './pages/Inicio.tsx'
 import { NoEncontrada } from './pages/NoEncontrada.tsx'
 import { Perfil } from './pages/Perfil.tsx'
@@ -55,6 +56,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <Inicio /> },
       { path: 'perfil', element: <Perfil /> },
+      { path: 'calculadoras', element: <Calculadoras /> },
       // El entrenador lo edita; el cliente lo ve desde su rutina (RF-23).
       { path: 'ejercicios/:id', element: <DetalleEjercicio /> },
       // La rutina como la ve el cliente (RF-40); el entrenador también puede abrirla.

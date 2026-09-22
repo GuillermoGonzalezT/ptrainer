@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router'
+import { Adherencia } from '../../components/Adherencia.tsx'
 import { Encabezado } from '../../components/Encabezado.tsx'
 import { Aviso, Boton } from '../../components/Formulario.tsx'
 import { Segmentos } from '../../components/Segmentos.tsx'
@@ -61,6 +62,7 @@ export function FichaCliente() {
       <FotoCliente cliente={cliente} alCambiar={recargar} />
       {!cliente.usuario_id && <InvitacionCliente clienteId={cliente.id} nombre={cliente.nombre} />}
       <RutinasCliente clienteId={cliente.id} />
+      <Adherencia clienteId={cliente.id} />
       <SesionesCliente clienteId={cliente.id} />
       <MetricasCliente clienteId={cliente.id} />
       <Datos cliente={cliente} />

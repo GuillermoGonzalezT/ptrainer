@@ -210,3 +210,14 @@
 .casillaCliente + .casillaCliente {
   border-top: 1px solid var(--color-border);
 }
+
+/* Etiqueta de superserie (A1, A2…) en la cabecera de la tarjeta. */
+.superserie {
+  flex: none;
+  padding: 2px var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
+}

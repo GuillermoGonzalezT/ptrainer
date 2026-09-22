@@ -20,6 +20,7 @@ export function ListaSeguimientos({ asignaciones }: { asignaciones: MetricaDeCli
                 <span className={pantalla.filaNombre}>{a.metrica.nombre}</span>
                 <span className={pantalla.filaDetalle}>
                   {ultima ? formatearFecha(ultima.fecha) : 'Sin mediciones'}
+                  {a.objetivo !== null && ` · objetivo ${conUnidad(a.objetivo, a.metrica.unidad)}`}
                   {a.cliente_puede_cargar && ' · carga el cliente'}
                 </span>
               </span>

@@ -75,3 +75,14 @@
   padding: var(--space-2) 0;
   background: var(--color-bg);
 }
+
+.superserie {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 1px var(--space-2);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
+}

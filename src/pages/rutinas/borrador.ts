@@ -19,11 +19,20 @@ export type Borrador = {
   tempo: string
   pedirRpe: boolean
   notas: string
+  // Superserie (RF-33): se hace seguido con el ejercicio de abajo.
+  unidoConSiguiente: boolean
 }
 
 const texto = (n: number | null) => (n === null ? '' : String(n).replace('.', ','))
 
-export function desdeGuardado(item: EjercicioDeRutina): Borrador {
+export function desdeGuardados(items: EjercicioDeRutina[]): Borrador[] {
+  return items.map((item, i) => ({
+    ...desdeGuardado(item),
+    unidoConSiguiente: item.superserie !== null && items[i + 1]?.superserie === item.superserie,
+  }))
+}
+
+function desdeGuardado(item: EjercicioDeRutina): Omit<Borrador, 'unidoConSiguiente'> {
   return {
     clave: item.id,
     id: item.id,
@@ -62,6 +71,7 @@ export function nuevo(ejercicio: { id: string; nombre: string }): Borrador {
     tempo: '',
     pedirRpe: false,
     notas: '',
+    unidoConSiguiente: false,
   }
 }
 
@@ -82,6 +92,7 @@ function numero(valor: string, campo: string, { min, max, entero }: { min: numbe
 // con el número de ejercicio, para mostrarlo arriba del botón de guardar.
 export function paraGuardar(borradores: Borrador[]): { items: ItemAGuardar[] } | { error: string } {
   const items: ItemAGuardar[] = []
+  const superseries = numerarSuperseries(borradores)
   for (const [i, b] of borradores.entries()) {
     try {
       const series = numero(b.series, 'Series', { min: 1, max: 20, entero: true })
@@ -114,6 +125,7 @@ export function paraGuardar(borradores: Borrador[]): { items: ItemAGuardar[] } |
         tempo: b.tempo.trim() || null,
         pedir_rpe: b.pedirRpe,
         notas: b.notas.trim() || null,
+        superserie: superseries[i],
       })
     } catch (e) {
       if (e instanceof ErrorDeCampo) return { error: `Ejercicio ${i + 1} (${b.ejercicio.nombre}): ${e.message}` }
@@ -121,4 +133,23 @@ export function paraGuardar(borradores: Borrador[]): { items: ItemAGuardar[] } |
     }
   }
   return { items }
+}
+
+// Los enlaces "unido con el siguiente" se convierten en números de
+// superserie: cada tramo de ejercicios unidos recibe un número (1, 2…). El
+// enlace del último ejercicio no une con nada y se ignora.
+export function numerarSuperseries(borradores: Pick<Borrador, 'unidoConSiguiente'>[]): (number | null)[] {
+  const numeros: (number | null)[] = []
+  let actual = 0
+  borradores.forEach((b, i) => {
+    const conAnterior = i > 0 && borradores[i - 1].unidoConSiguiente
+    const conSiguiente = b.unidoConSiguiente && i < borradores.length - 1
+    if (!conAnterior && !conSiguiente) {
+      numeros.push(null)
+      return
+    }
+    if (!conAnterior) actual += 1
+    numeros.push(actual)
+  })
+  return numeros
 }

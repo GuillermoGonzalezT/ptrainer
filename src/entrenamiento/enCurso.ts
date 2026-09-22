@@ -117,6 +117,21 @@ export function sesionesSinTerminar(): SesionEnCurso[] {
   }
 }
 
+// Los pasos del entrenamiento: cada ejercicio suelto es un paso, y una
+// superserie (RF-33) es un paso con todos sus ejercicios. Devuelve los
+// índices de los ejercicios de cada paso. Las sesiones guardadas antes de las
+// superseries no traen el dato: van todas sueltas.
+export function pasos(sesion: SesionEnCurso): number[][] {
+  const resultado: number[][] = []
+  sesion.ejercicios.forEach((e, i) => {
+    const ss = e.prescripcion.superserie ?? null
+    const anterior = resultado.at(-1)
+    if (ss !== null && anterior && sesion.ejercicios[anterior[0]].prescripcion.superserie === ss) anterior.push(i)
+    else resultado.push([i])
+  })
+  return resultado
+}
+
 export function seriesHechas(sesion: SesionEnCurso): number {
   return sesion.ejercicios.reduce((total, e) => total + e.series.filter((s) => s.hecha).length, 0)
 }
@@ -152,6 +167,26 @@ function aSerieHecha(serie: SerieEnCurso, porTiempo: boolean, n: number) {
     segundos: porTiempo ? numero(serie.segundos, 'Segundos', { min: 0, max: 3600, entero: true }) : null,
     rpe: numero(serie.rpe, 'RPE', { min: 1, max: 10 }),
   }
+}
+
+export type RecordPersonal = { nombre: string; peso: number; anterior: number }
+
+// RF-62: ejercicios en los que esta sesión superó la carga máxima de todas
+// las anteriores. La primera vez con un ejercicio no cuenta como récord.
+export function recordsDeLaSesion(sesion: SesionEnCurso, maximosAnteriores: Map<string, number>): RecordPersonal[] {
+  const records: RecordPersonal[] = []
+  const vistos = new Set<string>()
+  for (const e of sesion.ejercicios) {
+    if (vistos.has(e.ejercicioId)) continue
+    const pesos = sesion.ejercicios
+      .filter((x) => x.ejercicioId === e.ejercicioId)
+      .flatMap((x) => x.series.filter((s) => s.hecha).map((s) => Number(s.peso.trim().replace(',', '.')) || 0))
+    vistos.add(e.ejercicioId)
+    const anterior = maximosAnteriores.get(e.ejercicioId)
+    const peso = Math.max(0, ...pesos)
+    if (anterior !== undefined && anterior > 0 && peso > anterior) records.push({ nombre: e.nombre, peso, anterior })
+  }
+  return records
 }
 
 // Lo que se manda a la base: solo las series marcadas, numeradas de nuevo

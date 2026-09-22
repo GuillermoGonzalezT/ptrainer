@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Avatar } from '../components/Avatar.tsx'
 import { Boton } from '../components/Formulario.tsx'
@@ -31,6 +32,7 @@ export function Perfil() {
         <dt>Cuenta</dt>
         <dd>{tipo === 'entrenador' ? 'Entrenador' : 'Cliente'}</dd>
       </dl>
+      <Link to="/calculadoras">Calculadoras: 1RM, porcentajes y discos</Link>
       <Boton type="button" variante="secundario" onClick={cerrarSesion}>
         Cerrar sesión
       </Boton>

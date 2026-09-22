@@ -2,16 +2,19 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useAuth } from '../../auth/useAuth.ts'
 import { Encabezado } from '../../components/Encabezado.tsx'
-import { Aviso } from '../../components/Formulario.tsx'
+import { Aviso, Boton, Campo } from '../../components/Formulario.tsx'
 import { GraficaEvolucion } from '../../components/GraficaEvolucion.tsx'
 import {
   actualizarMedicion,
   borrarMedicion,
   cambiarPermisoDeCarga,
   crearMedicion,
+  guardarObjetivo,
   mejorMarca,
   obtenerMetricaDeCliente,
   quitarAsignacion,
+  recordsDeMetrica,
+  valorDeIntentos,
   type Medicion,
   type MetricaDeClienteCompleta,
 } from '../../datos/metricas.ts'
@@ -20,7 +23,7 @@ import { formatearFecha } from '../../lib/formato.ts'
 import { useConsulta } from '../../lib/useConsulta.ts'
 import pantalla from '../../styles/pantalla.module.css'
 import estilosRutinas from '../rutinas/rutinas.module.css'
-import { conUnidad, describirCambio } from './formato.ts'
+import { conUnidad, describirCambio, leerNumero } from './formato.ts'
 import { FormularioMedicion } from './FormularioMedicion.tsx'
 import styles from './metricas.module.css'
 
@@ -56,7 +59,9 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [editando, setEditando] = useState<string | null>(null)
+  const [aviso, setAviso] = useState<string | null>(null)
   const { metrica, mediciones } = datos
+  const records = recordsDeMetrica(metrica, mediciones)
   const volver = esEntrenador
     ? { to: `/clientes/${datos.cliente_id}`, etiqueta: datos.cliente.nombre }
     : { to: '/progreso', etiqueta: 'progreso' }
@@ -94,6 +99,11 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
   return (
     <section className={pantalla.pantalla}>
       <Encabezado titulo={metrica.nombre} volver={volver} />
+      {aviso && (
+        <p className={styles.record} role="status">
+          {aviso}
+        </p>
+      )}
       <p className={pantalla.textoApagado}>
         {esEntrenador && `${datos.cliente.nombre} · `}
         <Link to={`/metricas/${metrica.id}`}>Cómo se mide</Link>
@@ -123,6 +133,13 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
               <span className={pantalla.textoApagado}>{formatearFecha(mejor.fecha)}</span>
             </div>
           )}
+          {datos.objetivo !== null && (
+            <div className={styles.dato}>
+              <span className={styles.datoEtiqueta}>Objetivo</span>
+              <span className={styles.datoValor}>{conUnidad(datos.objetivo, metrica.unidad)}</span>
+              <span className={pantalla.textoApagado}>{distanciaAlObjetivo(metrica, ultima.valor, datos.objetivo)}</span>
+            </div>
+          )}
         </div>
       ) : (
         <p className={pantalla.textoApagado}>Todavía no hay mediciones.</p>
@@ -134,6 +151,7 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
           <GraficaEvolucion
             puntos={mediciones}
             unidad={metrica.unidad}
+            referencia={datos.objetivo !== null ? { valor: datos.objetivo, etiqueta: 'Objetivo' } : null}
             descripcion={`${metrica.nombre}${esEntrenador ? ` de ${datos.cliente.nombre}` : ''}`}
           />
         </div>
@@ -147,6 +165,10 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
             // Sin `hacer`: si falla, el error lo muestra el formulario y no se borra lo escrito.
             onGuardar={async (fecha, intentos, nota) => {
               await crearMedicion(datos.id, fecha, intentos, nota)
+              // RF-62: si superó la mejor marca, se festeja.
+              const valor = valorDeIntentos(metrica, intentos)
+              const esRecord = mejor !== null && (metrica.mejor === 'mayor' ? valor > mejor.valor : valor < mejor.valor)
+              setAviso(esRecord ? `¡Nuevo récord! ${conUnidad(valor, metrica.unidad)} supera la mejor marca anterior.` : null)
               alCambiar()
             }}
           />
@@ -174,7 +196,10 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
               ) : (
                 <li key={m.id} className={pantalla.nota}>
                   <div className={styles.medicion}>
-                    <strong>{conUnidad(m.valor, metrica.unidad)}</strong>
+                    <strong>
+                      {conUnidad(m.valor, metrica.unidad)}
+                      {records.has(m.id) && <span className={styles.marcaRecord}>Récord</span>}
+                    </strong>
                     <span className={pantalla.textoApagado}>{formatearFecha(m.fecha)}</span>
                   </div>
                   {m.intentos.length > 1 && (
@@ -221,11 +246,61 @@ function Contenido({ datos, esEntrenador, uid, alCambiar }: Props) {
             />
             {datos.cliente.nombre} puede cargar sus propias mediciones
           </label>
+          <Objetivo
+            actual={datos.objetivo}
+            unidad={metrica.unidad}
+            onGuardar={(valor) => hacer(() => guardarObjetivo(datos.id, valor))}
+          />
           <button type="button" className={pantalla.linkPeligro} style={{ alignSelf: 'flex-start' }} onClick={quitar}>
             Quitar esta métrica
           </button>
         </div>
       )}
     </section>
+  )
+}
+
+// "Faltan 5 cm", "¡Alcanzado!" o, si no hay un "mejor", la diferencia.
+function distanciaAlObjetivo(metrica: MetricaDeClienteCompleta['metrica'], actual: number, objetivo: number): string {
+  const diferencia = objetivo - actual
+  const cuanto = conUnidad(Math.abs(Math.round(diferencia * 1000) / 1000), metrica.unidad)
+  if (metrica.mejor === 'ninguno') return diferencia === 0 ? 'En el objetivo' : `A ${cuanto}`
+  const alcanzado = metrica.mejor === 'mayor' ? actual >= objetivo : actual <= objetivo
+  return alcanzado ? '¡Alcanzado!' : `Faltan ${cuanto}`
+}
+
+// RF-56: el entrenador fija (o borra) el objetivo de este cliente.
+function Objetivo({ actual, unidad, onGuardar }: { actual: number | null; unidad: string; onGuardar: (v: number | null) => Promise<void> }) {
+  const [texto, setTexto] = useState(actual === null ? '' : String(actual).replace('.', ','))
+  const [guardando, setGuardando] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const valor = leerNumero(texto)
+  const sinCambios = valor === actual
+
+  async function guardar() {
+    if (texto.trim() && valor === null) {
+      setError('Poné un número.')
+      return
+    }
+    setError(null)
+    setGuardando(true)
+    await onGuardar(valor)
+    setGuardando(false)
+  }
+
+  return (
+    <div className={styles.objetivo}>
+      <Campo
+        etiqueta={`Objetivo (${unidad})`}
+        inputMode="decimal"
+        ayuda="Aparece en la gráfica. Dejalo vacío para no tener objetivo."
+        value={texto}
+        onChange={(e) => setTexto(e.target.value)}
+      />
+      <Boton type="button" variante="secundario" cargando={guardando} disabled={sinCambios} onClick={guardar}>
+        Guardar objetivo
+      </Boton>
+      {error && <Aviso tipo="error">{error}</Aviso>}
+    </div>
   )
 }

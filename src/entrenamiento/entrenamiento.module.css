@@ -308,3 +308,45 @@
   background: var(--color-accent);
   border-color: var(--color-accent);
 }
+
+.superserie {
+  display: inline-block;
+  margin-right: var(--space-2);
+  padding: 2px var(--space-2);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  vertical-align: middle;
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: 999px;
+}
+
+.avisoSuperserie {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* Récords de la sesión (RF-62): se destaca con el color de la marca. */
+.records {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--color-on-accent);
+  background: var(--color-accent);
+  border-radius: var(--radius-md);
+}
+
+.records strong {
+  font-size: 1.25rem;
+}
+
+.records ul {
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.records span {
+  color: inherit;
+  opacity: 0.85;
+}

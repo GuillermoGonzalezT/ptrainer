@@ -9,6 +9,8 @@ import { formatearSeries } from './formato.ts'
 
 type Props = {
   ejercicio: EjercicioEnCurso
+  // A1, A2… si es parte de una superserie.
+  etiqueta?: string | null
   ultima: UltimaVez | undefined
   error: { serie: number; mensaje: string } | null
   onCambiarSerie: (indice: number, cambios: Partial<SerieEnCurso>) => void
@@ -19,7 +21,7 @@ type Props = {
 
 // Un ejercicio del modo entrenamiento: qué hay que hacer, qué hizo la última
 // vez (RF-43) y una fila por serie para anotar lo que hizo realmente (RF-41).
-export function TarjetaEjercicio({ ejercicio, ultima, error, onCambiarSerie, onMarcar, onAgregarSerie, onQuitarSerie }: Props) {
+export function TarjetaEjercicio({ ejercicio, etiqueta, ultima, error, onCambiarSerie, onMarcar, onAgregarSerie, onQuitarSerie }: Props) {
   const p = ejercicio.prescripcion
   const porTiempo = p.segundos !== null
   const detalles = detallesPrescripcion(p)
@@ -28,7 +30,10 @@ export function TarjetaEjercicio({ ejercicio, ultima, error, onCambiarSerie, onM
   return (
     <div className={styles.tarjeta}>
       <div className={styles.cabecera}>
-        <h2 className={styles.nombre}>{ejercicio.nombre}</h2>
+        <h2 className={styles.nombre}>
+          {etiqueta && <span className={styles.superserie}>{etiqueta}</span>}
+          {ejercicio.nombre}
+        </h2>
         <Link to={`/ejercicios/${ejercicio.ejercicioId}`} className={styles.video}>
           Ver video
         </Link>

@@ -5,6 +5,10 @@ import styles from './rutinas.module.css'
 
 type Props = {
   numero: number
+  // A1, A2… si está en una superserie (RF-33).
+  superserie: string | null
+  // Está en una superserie y no es el último: el descanso va después del último.
+  sinDescanso: boolean
   item: Borrador
   abierto: boolean
   esPrimero: boolean
@@ -34,7 +38,19 @@ function resumen(b: Borrador): string {
   return partes.join(' · ')
 }
 
-export function ItemRutina({ numero, item, abierto, esPrimero, esUltimo, onAbrir, onCambio, onMover, onQuitar }: Props) {
+export function ItemRutina({
+  numero,
+  superserie,
+  sinDescanso,
+  item,
+  abierto,
+  esPrimero,
+  esUltimo,
+  onAbrir,
+  onCambio,
+  onMover,
+  onQuitar,
+}: Props) {
   return (
     <li className={styles.item}>
       <button type="button" className={styles.itemCabecera} aria-expanded={abierto} onClick={onAbrir}>
@@ -43,6 +59,7 @@ export function ItemRutina({ numero, item, abierto, esPrimero, esUltimo, onAbrir
           <span className={styles.itemNombre}>{item.ejercicio.nombre}</span>
           <span className={styles.itemResumen}>{resumen(item)}</span>
         </span>
+        {superserie && <span className={styles.superserie}>{superserie}</span>}
         <span className={styles.itemFlecha} aria-hidden="true">
           {abierto ? '▴' : '▾'}
         </span>
@@ -61,6 +78,7 @@ export function ItemRutina({ numero, item, abierto, esPrimero, esUltimo, onAbrir
             <Campo
               etiqueta="Descanso (s)"
               inputMode="numeric"
+              ayuda={sinDescanso ? 'En la superserie se pasa directo al siguiente: el descanso va después del último.' : undefined}
               value={item.descanso}
               onChange={(e) => onCambio({ descanso: e.target.value })}
             />
@@ -143,6 +161,17 @@ export function ItemRutina({ numero, item, abierto, esPrimero, esUltimo, onAbrir
             value={item.notas}
             onChange={(e) => onCambio({ notas: e.target.value })}
           />
+
+          {!esUltimo && (
+            <label className={styles.casilla}>
+              <input
+                type="checkbox"
+                checked={item.unidoConSiguiente}
+                onChange={(e) => onCambio({ unidoConSiguiente: e.target.checked })}
+              />
+              Hacerlo en superserie con el ejercicio de abajo
+            </label>
+          )}
 
           <div className={styles.itemAcciones}>
             <button type="button" className={styles.accion} disabled={esPrimero} onClick={() => onMover(-1)}>

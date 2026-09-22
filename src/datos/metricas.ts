@@ -33,6 +33,8 @@ export type MetricaDeCliente = {
   id: string
   cliente_id: string
   cliente_puede_cargar: boolean
+  // Valor al que se apunta (RF-56). Lo fija el entrenador.
+  objetivo: number | null
   metrica: Metrica
   ultimas: Pick<Medicion, 'fecha' | 'valor'>[]
 }
@@ -126,12 +128,13 @@ export async function urlDeVideoMetrica(ruta: string): Promise<string | null> {
 
 // Asignaciones (RF-51, RF-53)
 
-const columnasAsignacion = `id, cliente_id, cliente_puede_cargar, metricas(${columnas}), mediciones(fecha, valor)`
+const columnasAsignacion = `id, cliente_id, cliente_puede_cargar, objetivo, metricas(${columnas}), mediciones(fecha, valor)`
 
 type FilaAsignacion = {
   id: string
   cliente_id: string
   cliente_puede_cargar: boolean
+  objetivo: number | null
   metricas: Omit<Metrica, 'mejor'> & { mejor: string }
   mediciones: { fecha: string; valor: number }[]
 }
@@ -160,7 +163,7 @@ export async function obtenerMetricaDeCliente(id: string): Promise<MetricaDeClie
   const { data, error } = await db()
     .from('cliente_metricas')
     .select(
-      `id, cliente_id, cliente_puede_cargar, clientes(nombre), metricas(${columnas}),
+      `id, cliente_id, cliente_puede_cargar, objetivo, clientes(nombre), metricas(${columnas}),
        mediciones(id, fecha, intentos, valor, nota, registrada_por, created_at)`,
     )
     .eq('id', id)
@@ -198,6 +201,11 @@ export async function asignarMetrica(metricaId: string, clienteIds: string[], cl
 
 export async function cambiarPermisoDeCarga(id: string, clientePuedeCargar: boolean): Promise<void> {
   const { error } = await db().from('cliente_metricas').update({ cliente_puede_cargar: clientePuedeCargar }).eq('id', id)
+  if (error) throw error
+}
+
+export async function guardarObjetivo(id: string, objetivo: number | null): Promise<void> {
+  const { error } = await db().from('cliente_metricas').update({ objetivo }).eq('id', id)
   if (error) throw error
 }
 
@@ -243,4 +251,24 @@ export function mejorMarca(metrica: Pick<Metrica, 'mejor'>, mediciones: Pick<Med
 export function sentidoDelCambio(metrica: Pick<Metrica, 'mejor'>, diferencia: number): 'mejora' | 'empeora' | 'neutro' {
   if (diferencia === 0 || metrica.mejor === 'ninguno') return 'neutro'
   return (diferencia > 0) === (metrica.mejor === 'mayor') ? 'mejora' : 'empeora'
+}
+
+// RF-62: las mediciones que superaron a todas las anteriores (van en orden
+// de fecha). La primera no cuenta: no tiene con qué compararse.
+export function recordsDeMetrica(metrica: Pick<Metrica, 'mejor'>, mediciones: Pick<Medicion, 'id' | 'valor'>[]): Set<string> {
+  const records = new Set<string>()
+  if (metrica.mejor === 'ninguno') return records
+  let mejor: number | null = null
+  for (const m of mediciones) {
+    if (mejor !== null && (metrica.mejor === 'mayor' ? m.valor > mejor : m.valor < mejor)) records.add(m.id)
+    if (mejor === null || (metrica.mejor === 'mayor' ? m.valor > mejor : m.valor < mejor)) mejor = m.valor
+  }
+  return records
+}
+
+// El valor que va a calcular la base para una toma (ver calcular_valor_medicion).
+export function valorDeIntentos(metrica: Pick<Metrica, 'mejor'>, intentos: number[]): number {
+  if (metrica.mejor === 'mayor') return Math.max(...intentos)
+  if (metrica.mejor === 'menor') return Math.min(...intentos)
+  return intentos[intentos.length - 1]
 }

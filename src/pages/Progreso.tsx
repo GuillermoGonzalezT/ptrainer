@@ -1,4 +1,5 @@
 import { useAuth } from '../auth/useAuth.ts'
+import { Adherencia } from '../components/Adherencia.tsx'
 import { Encabezado } from '../components/Encabezado.tsx'
 import { Aviso, Boton } from '../components/Formulario.tsx'
 import { listarMetricasDeCliente } from '../datos/metricas.ts'
@@ -27,6 +28,7 @@ export function Progreso() {
         </>
       )}
       {cargando && !error && <p className={pantalla.textoApagado}>Cargando…</p>}
+      {ficha && <Adherencia clienteId={ficha.id} />}
       <h2 className={pantalla.subtitulo}>Métricas</h2>
       {asignaciones && asignaciones.length === 0 && (
         <p className={pantalla.textoApagado}>

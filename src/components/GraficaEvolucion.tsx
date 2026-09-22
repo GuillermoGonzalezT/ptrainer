@@ -7,6 +7,8 @@ export type Punto = { fecha: string; valor: number }
 type Props = {
   puntos: Punto[]
   unidad: string
+  // Una línea horizontal de referencia, por ejemplo el objetivo (RF-56).
+  referencia?: { valor: number; etiqueta: string } | null
   // Qué se grafica, para lectores de pantalla ("Salto vertical de Ana").
   descripcion: string
 }
@@ -41,7 +43,7 @@ function marcasRedondas(min: number, max: number, cantidad = 4): number[] {
 // RF-54 y RF-60: evolución de una métrica o de un ejercicio en el tiempo. Una sola serie, así que no
 // lleva leyenda: el título de la sección dice qué es. La lista de mediciones
 // debajo hace de tabla.
-export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
+export function GraficaEvolucion({ puntos, unidad, descripcion, referencia }: Props) {
   const contenedor = useRef<HTMLDivElement>(null)
   const [ancho, setAncho] = useState(320)
   const [elegido, setElegido] = useState<number | null>(null)
@@ -59,7 +61,9 @@ export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
 
   const tiempos = puntos.map((p) => aMs(p.fecha))
   const valores = puntos.map((p) => p.valor)
-  const marcas = marcasRedondas(Math.min(...valores), Math.max(...valores))
+  // El eje incluye la referencia, para que la línea del objetivo siempre se vea.
+  const extremos = referencia ? [...valores, referencia.valor] : valores
+  const marcas = marcasRedondas(Math.min(...extremos), Math.max(...extremos))
   const yMin = marcas[0]
   const yMax = marcas.at(-1)!
   const tMin = Math.min(...tiempos)
@@ -141,6 +145,20 @@ export function GraficaEvolucion({ puntos, unidad, descripcion }: Props) {
             (arranca en 38, en 1750…) exageraría las diferencias. */}
         {yMin <= 0 && <path className={styles.area} d={area} />}
         <path className={styles.linea} d={linea} />
+        {referencia && (
+          <g>
+            <line
+              className={styles.referencia}
+              x1={MARGEN.izquierda}
+              x2={ancho - MARGEN.derecha}
+              y1={y(referencia.valor)}
+              y2={y(referencia.valor)}
+            />
+            <text className={styles.referenciaTexto} x={MARGEN.izquierda + 4} y={y(referencia.valor) - 5}>
+              {referencia.etiqueta} {numero.format(referencia.valor)}
+            </text>
+          </g>
+        )}
         {elegido !== null && (
           <line className={styles.cruce} x1={xs[elegido]} x2={xs[elegido]} y1={MARGEN.arriba} y2={ALTO - MARGEN.abajo} />
         )}
