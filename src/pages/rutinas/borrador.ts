@@ -1,4 +1,4 @@
-import type { EjercicioDeRutina, ItemAGuardar } from '../../datos/rutinas.ts'
+import type { EjercicioDeRutina, Intensidad, ItemAGuardar } from '../../datos/rutinas.ts'
 
 // Lo que se edita en pantalla. Los números van como texto para que el campo
 // pueda quedar vacío o a medio escribir ("7,") sin pelearse con el teclado.
@@ -21,6 +21,10 @@ export type Borrador = {
   notas: string
   // Superserie (RF-33): se hace seguido con el ejercicio de abajo.
   unidoConSiguiente: boolean
+  // Entrenamiento deportivo (RF-35).
+  velocidad: string
+  perdidaVel: string
+  intensidad: Intensidad | ''
 }
 
 const texto = (n: number | null) => (n === null ? '' : String(n).replace('.', ','))
@@ -54,6 +58,9 @@ function desdeGuardado(item: EjercicioDeRutina): Omit<Borrador, 'unidoConSiguien
     tempo: item.tempo ?? '',
     pedirRpe: item.pedir_rpe,
     notas: item.notas ?? '',
+    velocidad: texto(item.velocidad_ms),
+    perdidaVel: texto(item.perdida_vel_pct),
+    intensidad: item.intensidad ?? '',
   }
 }
 
@@ -76,6 +83,9 @@ export function nuevo(ejercicio: { id: string; nombre: string }): Borrador {
     pedirRpe: false,
     notas: '',
     unidoConSiguiente: false,
+    velocidad: '',
+    perdidaVel: '',
+    intensidad: '',
   }
 }
 
@@ -130,6 +140,9 @@ export function paraGuardar(borradores: Borrador[]): { items: ItemAGuardar[] } |
         pedir_rpe: b.pedirRpe,
         notas: b.notas.trim() || null,
         superserie: superseries[i],
+        velocidad_ms: numero(b.velocidad, 'La velocidad', { min: 0.1, max: 9 }),
+        perdida_vel_pct: numero(b.perdidaVel, 'La pérdida de velocidad', { min: 1, max: 90, entero: true }),
+        intensidad: b.intensidad || null,
       })
     } catch (e) {
       if (e instanceof ErrorDeCampo) return { error: `Ejercicio ${i + 1} (${b.ejercicio.nombre}): ${e.message}` }

@@ -561,9 +561,11 @@ export type Database = {
           descanso_s: number | null
           ejercicio_id: string
           id: string
+          intensidad: string | null
           notas: string | null
           orden: number
           pedir_rpe: boolean
+          perdida_vel_pct: number | null
           reps_max: number | null
           reps_min: number | null
           rir: number | null
@@ -573,6 +575,7 @@ export type Database = {
           series: number
           superserie: number | null
           tempo: string | null
+          velocidad_ms: number | null
         }
         Insert: {
           carga_kg?: number | null
@@ -580,9 +583,11 @@ export type Database = {
           descanso_s?: number | null
           ejercicio_id: string
           id?: string
+          intensidad?: string | null
           notas?: string | null
           orden: number
           pedir_rpe?: boolean
+          perdida_vel_pct?: number | null
           reps_max?: number | null
           reps_min?: number | null
           rir?: number | null
@@ -592,6 +597,7 @@ export type Database = {
           series: number
           superserie?: number | null
           tempo?: string | null
+          velocidad_ms?: number | null
         }
         Update: {
           carga_kg?: number | null
@@ -599,9 +605,11 @@ export type Database = {
           descanso_s?: number | null
           ejercicio_id?: string
           id?: string
+          intensidad?: string | null
           notas?: string | null
           orden?: number
           pedir_rpe?: boolean
+          perdida_vel_pct?: number | null
           reps_max?: number | null
           reps_min?: number | null
           rir?: number | null
@@ -611,6 +619,7 @@ export type Database = {
           series?: number
           superserie?: number | null
           tempo?: string | null
+          velocidad_ms?: number | null
         }
         Relationships: [
           {

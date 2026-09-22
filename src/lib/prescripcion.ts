@@ -1,5 +1,5 @@
 import type { Dia, Prescripcion } from '../datos/rutinas.ts'
-import { inicialDia, nombreDia } from '../datos/rutinas.ts'
+import { INTENSIDADES, inicialDia, nombreDia } from '../datos/rutinas.ts'
 
 const numero = new Intl.NumberFormat('es', { maximumFractionDigits: 2 })
 
@@ -25,6 +25,10 @@ export function detallesPrescripcion(p: Prescripcion): string[] {
   if (p.carga_pct_1rm !== null) partes.push(`${numero.format(p.carga_pct_1rm)} % 1RM`)
   if (p.rpe !== null) partes.push(`RPE ${numero.format(p.rpe)}`)
   if (p.rir !== null) partes.push(`RIR ${p.rir}`)
+  // RF-35: velocidad objetivo de la barra y corte por pérdida de velocidad.
+  if (p.velocidad_ms !== null) partes.push(`${numero.format(p.velocidad_ms)} m/s`)
+  if (p.perdida_vel_pct !== null) partes.push(`cortar al perder ${p.perdida_vel_pct} %`)
+  if (p.intensidad) partes.push(INTENSIDADES.find((i) => i.valor === p.intensidad)!.etiqueta.toLowerCase())
   // Guiones que no cortan la línea: "3-1-1" no se parte en dos renglones.
   if (p.tempo) partes.push(`tempo ${p.tempo.replaceAll('-', '\u2011')}`)
   if (p.descanso_s !== null) partes.push(`descanso ${formatearDescanso(p.descanso_s)}`)

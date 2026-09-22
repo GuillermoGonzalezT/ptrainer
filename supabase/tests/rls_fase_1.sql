@@ -354,10 +354,71 @@ select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
 ));
 select prueba.ok((select count(*) from public.rutina_ejercicios where rutina_id = :'plantilla' and superserie = 1) = 2,
   'superseries: guardar_ejercicios_rutina guarda la superserie');
+-- Se mandaron 4 y 3 en el mismo bloque: la base las empareja con la del
+-- primero, venga de donde venga el pedido.
+select prueba.ok((
+  select array_agg(series order by orden) from public.rutina_ejercicios
+  where rutina_id = :'plantilla' and superserie = 1
+) = array[4, 4]::smallint[], 'superseries: guardar empareja las series del bloque');
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 3, 'reps_min', 10, 'superserie', 1),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 5, 'reps_min', 10, 'superserie', 1),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 4, 'reps_min', 10, 'superserie', 1),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 9, 'reps_min', 10)
+));
+select prueba.ok((
+  select array_agg(series order by orden) from public.rutina_ejercicios where rutina_id = :'plantilla'
+) = array[3, 3, 3, 9]::smallint[], 'superseries: un circuito de tres se empareja y el suelto queda igual');
+
+-- Se rearma el bloque de dos para lo que sigue.
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 4, 'reps_min', 6, 'reps_max', 8, 'superserie', 1),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 4, 'reps_min', 12, 'superserie', 1)
+));
+select id as re1 from public.rutina_ejercicios where rutina_id = :'plantilla' order by orden limit 1 \gset
+
 select public.asignar_plantilla(:'plantilla', array[:'c2']::uuid[]) as copia_ss \gset
 select prueba.ok((select count(*) from public.rutina_ejercicios where rutina_id = :'copia_ss' and superserie = 1) = 2,
   'superseries: asignar_plantilla copia la superserie');
 delete from public.rutinas where id = :'copia_ss';
+
+-- Velocidad e intensidad (RF-35) ----------------------------------------------------
+-- Son prescripción: se guardan, se copian al asignar, y la base rechaza
+-- valores que no existen.
+
+select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 5, 'reps_min', 3,
+    'velocidad_ms', 0.8, 'perdida_vel_pct', 20),
+  jsonb_build_object('ejercicio_id', :'ej1', 'series', 6, 'segundos', 10, 'intensidad', 'maximo')
+));
+select prueba.ok((
+  select array[velocidad_ms::text, perdida_vel_pct::text] from public.rutina_ejercicios
+  where rutina_id = :'plantilla' order by orden limit 1
+) = array['0.80', '20'], 'velocidad: se guarda la velocidad objetivo y el corte por pérdida');
+select prueba.ok((
+  select intensidad from public.rutina_ejercicios where rutina_id = :'plantilla' order by orden desc limit 1
+) = 'maximo', 'intensidad: se guarda la escala en palabras');
+
+select public.asignar_plantilla(:'plantilla', array[:'c2']::uuid[]) as copia_vel \gset
+select prueba.ok((
+  select array[velocidad_ms::text, intensidad] from public.rutina_ejercicios
+  where rutina_id = :'copia_vel' order by orden limit 1
+) = array['0.80', null], 'velocidad: asignar_plantilla la copia');
+delete from public.rutinas where id = :'copia_vel';
+
+select prueba.falla(format(
+  $q$select public.guardar_ejercicios_rutina(%L, jsonb_build_array(jsonb_build_object('ejercicio_id', %L, 'series', 3, 'intensidad', 'altísimo')))$q$,
+  :'plantilla', :'ej1'), 'intensidad: rechaza una que no está en la escala');
+select prueba.falla(format(
+  $q$select public.guardar_ejercicios_rutina(%L, jsonb_build_array(jsonb_build_object('ejercicio_id', %L, 'series', 3, 'velocidad_ms', 20)))$q$,
+  :'plantilla', :'ej1'), 'velocidad: rechaza un valor imposible');
+select prueba.falla(format(
+  $q$select public.guardar_ejercicios_rutina(%L, jsonb_build_array(jsonb_build_object('ejercicio_id', %L, 'series', 3, 'perdida_vel_pct', 150)))$q$,
+  :'plantilla', :'ej1'), 'velocidad: rechaza una pérdida mayor a 90%');
+
+-- El primer ejercicio cambió de id al reescribir la plantilla: lo que sigue
+-- lo necesita para dejarla con uno solo.
+select id as re1 from public.rutina_ejercicios where rutina_id = :'plantilla' order by orden limit 1 \gset
 select public.guardar_ejercicios_rutina(:'plantilla', jsonb_build_array(
   jsonb_build_object('id', :'re1', 'ejercicio_id', :'ej1', 'series', 4, 'reps_min', 6, 'reps_max', 8)
 ));

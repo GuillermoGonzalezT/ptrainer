@@ -33,7 +33,21 @@ export type Prescripcion = {
   notas: string | null
   // Ejercicios seguidos con el mismo número se hacen uno atrás del otro (RF-33).
   superserie: number | null
+  // Entrenamiento deportivo (RF-35): velocidad objetivo de la barra en m/s,
+  // corte por pérdida de velocidad, y esfuerzo en palabras.
+  velocidad_ms: number | null
+  perdida_vel_pct: number | null
+  intensidad: Intensidad | null
 }
+
+export const INTENSIDADES = [
+  { valor: 'suave', etiqueta: 'Suave' },
+  { valor: 'moderado', etiqueta: 'Moderado' },
+  { valor: 'fuerte', etiqueta: 'Fuerte' },
+  { valor: 'maximo', etiqueta: 'Máximo' },
+] as const
+
+export type Intensidad = (typeof INTENSIDADES)[number]['valor']
 
 export type EjercicioDeRutina = Prescripcion & {
   id: string
@@ -119,6 +133,7 @@ export async function obtenerRutina(id: string): Promise<RutinaCompleta | null> 
     .select(
       `${columnas}, rutina_ejercicios(id, orden, series, reps_min, reps_max, segundos, carga_kg,
        carga_pct_1rm, descanso_s, rpe, rir, tempo, pedir_rpe, notas, superserie,
+       velocidad_ms, perdida_vel_pct, intensidad,
        ejercicios(id, nombre, grupo_muscular, archivado))`,
     )
     .eq('id', id)
@@ -130,7 +145,12 @@ export async function obtenerRutina(id: string): Promise<RutinaCompleta | null> 
   return {
     ...rutina,
     dias_semana: rutina.dias_semana as Dia[],
-    items: rutina_ejercicios.map(({ ejercicios, ...item }) => ({ ...item, ejercicio: ejercicios })),
+    items: rutina_ejercicios.map(({ ejercicios, ...item }) => ({
+      ...item,
+      // La base ya limita los valores con un check; el tipo generado es text.
+      intensidad: item.intensidad as Intensidad | null,
+      ejercicio: ejercicios,
+    })),
   }
 }
 

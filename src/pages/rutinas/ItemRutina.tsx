@@ -1,5 +1,6 @@
 import { AreaDeTexto, Campo } from '../../components/Formulario.tsx'
 import { Segmentos } from '../../components/Segmentos.tsx'
+import { INTENSIDADES, type Intensidad } from '../../datos/rutinas.ts'
 import type { Borrador } from './borrador.ts'
 import styles from './rutinas.module.css'
 
@@ -150,6 +151,8 @@ export function ItemRutina({
             />
           </div>
 
+          <Deportivo item={item} onCambio={onCambio} />
+
           <label className={styles.casilla}>
             <input type="checkbox" checked={item.pedirRpe} onChange={(e) => onCambio({ pedirRpe: e.target.checked })} />
             Pedirle al cliente que anote el RPE de cada serie
@@ -188,5 +191,42 @@ export function ItemRutina({
         </div>
       )}
     </li>
+  )
+}
+
+// RF-35: lo que hace falta para entrenamiento deportivo y no para
+// hipertrofia. Va plegado salvo que el ejercicio ya tenga algo cargado, para
+// no alargar el formulario de siempre.
+function Deportivo({ item, onCambio }: { item: Borrador; onCambio: (parcial: Partial<Borrador>) => void }) {
+  const cargado = Boolean(item.velocidad || item.perdidaVel || item.intensidad)
+
+  return (
+    <details className={styles.deportivo} open={cargado}>
+      <summary>Velocidad e intensidad</summary>
+      <Segmentos
+        etiqueta="Intensidad"
+        opciones={[{ valor: '' as Intensidad | '', etiqueta: 'Sin indicar' }, ...INTENSIDADES]}
+        valor={item.intensidad}
+        onCambio={(intensidad) => onCambio({ intensidad })}
+      />
+      <div className={styles.fila2}>
+        <Campo
+          etiqueta="Velocidad (m/s)"
+          inputMode="decimal"
+          placeholder="0,80"
+          ayuda="De la barra. 0,80 para fuerza, 1,00 o más para potencia."
+          value={item.velocidad}
+          onChange={(e) => onCambio({ velocidad: e.target.value })}
+        />
+        <Campo
+          etiqueta="Cortar al perder (%)"
+          inputMode="numeric"
+          placeholder="20"
+          ayuda="Termina la serie al bajar ese % de su mejor repetición."
+          value={item.perdidaVel}
+          onChange={(e) => onCambio({ perdidaVel: e.target.value })}
+        />
+      </div>
+    </details>
   )
 }
