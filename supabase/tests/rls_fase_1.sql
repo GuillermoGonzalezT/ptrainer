@@ -270,6 +270,20 @@ select prueba.falla(format($q$insert into public.cuestionarios (cliente_id, resp
   'U1 no completa el cuestionario de otro cliente');
 select prueba.falla(format($q$insert into public.cuestionarios (cliente_id, respuestas) values (%L, '[]')$q$, :'c1'),
   'el cuestionario tiene que ser un objeto JSON');
+-- Guardar de nuevo: solo los campos que se pueden actualizar. Escribir
+-- también cliente_id (lo que hace el upsert de PostgREST) da permiso
+-- denegado, y por eso guardarCuestionario no usa upsert.
+select prueba.ok(prueba.afectadas(format(
+  $q$update public.cuestionarios set respuestas = '{"parq": {"p1": true}}', completado_en = now() where cliente_id = %L$q$,
+  :'c1')) = 1, 'U1 vuelve a guardar su cuestionario');
+-- El upsert de PostgREST, tal cual lo manda: pide permiso de UPDATE sobre
+-- cliente_id aunque no haya conflicto, porque los permisos se comprueban al
+-- planificar la sentencia y no fila por fila. Por eso fallaba el primer
+-- guardado y no se usa upsert acá.
+select prueba.falla(format(
+  $q$insert into public.cuestionarios (cliente_id, respuestas) values (%L, '{}')
+     on conflict (cliente_id) do update set cliente_id = excluded.cliente_id, respuestas = excluded.respuestas$q$,
+  :'c2'), 'el upsert de PostgREST sobre cuestionarios no tiene permiso (por eso no se usa)');
 select prueba.ok(prueba.afectadas(format(
   $q$insert into public.checkins (cliente_id, semana, sueno, estres, energia, cumplimiento, comentario)
      values (%L, date_trunc('week', current_date), 4, 2, 4, 5, 'Semana tranquila')$q$, :'c1')) = 1,

@@ -75,13 +75,21 @@ export async function obtenerCuestionario(clienteId: string): Promise<Cuestionar
 
 // Guarda (o crea) el cuestionario. `completado` marca cuándo se terminó de
 // llenar, para poder avisar a quien todavía no lo hizo.
+//
+// Sin upsert: el de PostgREST reescribe también cliente_id, que no se puede
+// actualizar desde la API, y la segunda vez que se guarda da "permiso
+// denegado". Es el mismo motivo que en guardarDevolucion.
 export async function guardarCuestionario(clienteId: string, respuestas: Respuestas, completado: boolean): Promise<void> {
-  const fila = {
-    cliente_id: clienteId,
+  const campos = {
     respuestas: respuestas as unknown as Json,
     completado_en: completado ? new Date().toISOString() : null,
   }
-  const { error } = await db().from('cuestionarios').upsert(fila, { onConflict: 'cliente_id' })
+  const existente = await db().from('cuestionarios').select('cliente_id').eq('cliente_id', clienteId).maybeSingle()
+  if (existente.error) throw existente.error
+
+  const { error } = existente.data
+    ? await db().from('cuestionarios').update(campos).eq('cliente_id', clienteId)
+    : await db().from('cuestionarios').insert({ cliente_id: clienteId, ...campos })
   if (error) throw error
 }
 
