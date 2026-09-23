@@ -35,8 +35,11 @@
   --tabbar-h: 64px;
 }
 
+/* El tema sale del sistema salvo que se elija uno a mano, que queda en
+   `data-tema` (ver lib/tema.ts). La paleta oscura está dos veces a propósito:
+   una para el sistema y otra para la elección manual. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-tema='claro']) {
     --color-bg: #121010;
     --color-surface: #1c1818;
     --color-surface-2: #262121;
@@ -51,6 +54,31 @@
     --color-grafica: #ef4444;
     --color-bien: #4ade80;
   }
+}
+
+:root[data-tema='oscuro'] {
+  --color-bg: #121010;
+  --color-surface: #1c1818;
+  --color-surface-2: #262121;
+  --color-text: #eee9e9;
+  --color-text-muted: #a89e9e;
+  --color-border: #362f2f;
+  --color-accent: #f87171;
+  --color-accent-strong: #fca5a5;
+  --color-on-accent: #2a0707;
+  --color-danger: #fbbf24;
+  /* El rojo de la marca es muy claro para una línea sobre fondo oscuro. */
+  --color-grafica: #ef4444;
+  --color-bien: #4ade80;
+}
+
+/* Para que los controles del navegador (calendarios, selects) acompañen. */
+:root[data-tema='claro'] {
+  color-scheme: light;
+}
+
+:root[data-tema='oscuro'] {
+  color-scheme: dark;
 }
 
 *,

@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Avatar } from '../components/Avatar.tsx'
 import { Boton } from '../components/Formulario.tsx'
+import { Segmentos } from '../components/Segmentos.tsx'
 import { obtenerCliente } from '../datos/clientes.ts'
 import { urlsDeFotos } from '../datos/fotos.ts'
 import { cerrarSesion } from '../lib/sesion.ts'
+import { guardarTema, TEMAS, temaGuardado, type Tema } from '../lib/tema.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import styles from './Perfil.module.css'
 
@@ -32,10 +35,32 @@ export function Perfil() {
         <dt>Cuenta</dt>
         <dd>{tipo === 'entrenador' ? 'Entrenador' : 'Cliente'}</dd>
       </dl>
+      <ElegirTema />
       <Link to="/calculadoras">Calculadoras: 1RM, porcentajes y discos</Link>
       <Boton type="button" variante="secundario" onClick={cerrarSesion}>
         Cerrar sesión
       </Boton>
     </section>
+  )
+}
+
+// RF-05: por defecto sigue al sistema; acá se puede forzar uno.
+function ElegirTema() {
+  const [tema, setTema] = useState<Tema>(temaGuardado)
+
+  function cambiar(nuevo: Tema) {
+    setTema(nuevo)
+    guardarTema(nuevo)
+  }
+
+  return (
+    <div className={styles.tema}>
+      <Segmentos etiqueta="Tema" opciones={[...TEMAS]} valor={tema} onCambio={cambiar} />
+      <p className={styles.temaAyuda}>
+        {tema === 'auto'
+          ? 'Sigue al de tu teléfono: se pone oscuro cuando el sistema lo está.'
+          : 'Queda guardado en este teléfono.'}
+      </p>
+    </div>
   )
 }
