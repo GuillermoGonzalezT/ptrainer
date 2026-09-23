@@ -161,6 +161,18 @@
   letter-spacing: 0.12em;
 }
 
+/* El código de invitación y su botón de copiar, en la misma línea. */
+.filaCodigo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.filaCodigo .codigo {
+  margin: 0;
+}
+
 .acciones {
   display: flex;
   flex-wrap: wrap;

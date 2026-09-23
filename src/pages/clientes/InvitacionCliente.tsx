@@ -13,7 +13,8 @@ export function InvitacionCliente({ clienteId, nombre }: { clienteId: string; no
   const [nueva, setNueva] = useState<Invitacion | null>(null)
   const [creando, setCreando] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [copiado, setCopiado] = useState(false)
+  // Qué se acaba de copiar, para avisarlo en el botón que se tocó.
+  const [copiado, setCopiado] = useState<'mensaje' | 'codigo' | null>(null)
 
   const invitacion = nueva ?? vigente ?? null
   const link = invitacion ? `${urlDeLaApp()}#/invitacion/${invitacion.codigo}` : ''
@@ -26,11 +27,22 @@ export function InvitacionCliente({ clienteId, nombre }: { clienteId: string; no
     setError(null)
     try {
       setNueva(await crearInvitacion(clienteId))
-      setCopiado(false)
+      setCopiado(null)
     } catch (e) {
       setError(mensajeDeError(e))
     }
     setCreando(false)
+  }
+
+  async function copiar(texto: string, que: 'mensaje' | 'codigo') {
+    try {
+      await navigator.clipboard.writeText(texto)
+      setCopiado(que)
+      setError(null)
+    } catch {
+      // Pasa si el navegador no da permiso o la página no es segura.
+      setError(que === 'codigo' ? 'No se pudo copiar. Anotá el código a mano.' : 'No se pudo copiar. Copiá el link a mano.')
+    }
   }
 
   async function compartir() {
@@ -42,12 +54,7 @@ export function InvitacionCliente({ clienteId, nombre }: { clienteId: string; no
       }
       return
     }
-    try {
-      await navigator.clipboard.writeText(mensaje)
-      setCopiado(true)
-    } catch {
-      setError('No se pudo copiar. Copiá el link a mano.')
-    }
+    await copiar(mensaje, 'mensaje')
   }
 
   return (
@@ -73,10 +80,15 @@ export function InvitacionCliente({ clienteId, nombre }: { clienteId: string; no
             Mandale el link. Si lo abre en otro dispositivo, también puede escribir el código. Vence el{' '}
             {formatearFecha(invitacion.expira_en)}.
           </p>
-          <p className={styles.codigo}>{invitacion.codigo}</p>
+          <div className={styles.filaCodigo}>
+            <p className={styles.codigo}>{invitacion.codigo}</p>
+            <Boton type="button" variante="secundario" onClick={() => copiar(invitacion.codigo, 'codigo')}>
+              {copiado === 'codigo' ? 'Código copiado' : 'Copiar código'}
+            </Boton>
+          </div>
           <div className={styles.acciones}>
             <Boton type="button" onClick={compartir}>
-              {copiado ? 'Mensaje copiado' : 'Compartir link'}
+              {copiado === 'mensaje' ? 'Mensaje copiado' : 'Compartir link'}
             </Boton>
             <Boton type="button" variante="secundario" cargando={creando} onClick={crear}>
               Crear otro código
