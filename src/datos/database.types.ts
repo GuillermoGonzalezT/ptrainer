@@ -211,6 +211,38 @@ export type Database = {
           },
         ]
       }
+      disponibilidad: {
+        Row: {
+          desde: string
+          dia: number
+          entrenador_id: string
+          hasta: string
+          id: string
+        }
+        Insert: {
+          desde: string
+          dia: number
+          entrenador_id?: string
+          hasta: string
+          id?: string
+        }
+        Update: {
+          desde?: string
+          dia?: number
+          entrenador_id?: string
+          hasta?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disponibilidad_entrenador_id_fkey"
+            columns: ["entrenador_id"]
+            isOneToOne: false
+            referencedRelation: "entrenadores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ejercicio_videos: {
         Row: {
           created_at: string
@@ -301,16 +333,19 @@ export type Database = {
           created_at: string
           dias_sin_entrenar: number
           id: string
+          zona_horaria: string
         }
         Insert: {
           created_at?: string
           dias_sin_entrenar?: number
           id: string
+          zona_horaria?: string
         }
         Update: {
           created_at?: string
           dias_sin_entrenar?: number
           id?: string
+          zona_horaria?: string
         }
         Relationships: [
           {
@@ -993,6 +1028,67 @@ export type Database = {
             columns: ["rutina_id"]
             isOneToOne: false
             referencedRelation: "rutinas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      turnos: {
+        Row: {
+          cliente_id: string | null
+          created_at: string
+          entrenador_id: string
+          estado: string
+          id: string
+          inicia_en: string
+          lugar: string | null
+          nota: string | null
+          pedido_por: string | null
+          termina_en: string
+        }
+        Insert: {
+          cliente_id?: string | null
+          created_at?: string
+          entrenador_id?: string
+          estado?: string
+          id?: string
+          inicia_en: string
+          lugar?: string | null
+          nota?: string | null
+          pedido_por?: string | null
+          termina_en: string
+        }
+        Update: {
+          cliente_id?: string | null
+          created_at?: string
+          entrenador_id?: string
+          estado?: string
+          id?: string
+          inicia_en?: string
+          lugar?: string | null
+          nota?: string | null
+          pedido_por?: string | null
+          termina_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "turnos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnos_entrenador_id_fkey"
+            columns: ["entrenador_id"]
+            isOneToOne: false
+            referencedRelation: "entrenadores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "turnos_pedido_por_fkey"
+            columns: ["pedido_por"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
             referencedColumns: ["id"]
           },
         ]

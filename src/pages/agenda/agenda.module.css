@@ -1,0 +1,101 @@
+/* Agenda (RF-80 a RF-82). */
+
+.navegacion {
+  display: grid;
+  grid-template-columns: var(--tap-min) 1fr var(--tap-min);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.rango {
+  text-align: center;
+  font-weight: 600;
+}
+
+.hoyLink {
+  justify-self: center;
+  min-height: var(--tap-min);
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.turno {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+/* Un turno cancelado queda a la vista pero apagado: sirve de registro. */
+.cancelado {
+  border-left-color: var(--color-border);
+  opacity: 0.6;
+}
+
+.turnoCabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.hora {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.etiquetaEstado {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.quien {
+  margin: 0;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Cada acción ocupa lo suyo, no la fila entera. */
+.acciones > * {
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+
+.diaTitulo {
+  margin: var(--space-3) 0 var(--space-1);
+  font-size: 1rem;
+  color: var(--color-text-muted);
+}
+
+.dosCampos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.dosCampos input {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Los horarios libres, como botones chicos en grilla. */
+.huecos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: var(--space-2);
+}

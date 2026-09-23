@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { Link } from 'react-router'
 import { useAuth } from '../auth/useAuth.ts'
 import { Aviso, Boton } from '../components/Formulario.tsx'
+import { listarTurnos, type TurnoConCliente } from '../datos/agenda.ts'
 import { cargarPanel, DIAS_RECIENTES, guardarUmbral, type Panel } from '../datos/panel.ts'
 import { mensajeDeError } from '../lib/errores.ts'
+import { formatearRango, minutosDeTurno } from '../lib/agenda.ts'
 import { formatearFecha, formatearFechaHora } from '../lib/formato.ts'
 import { useConsulta } from '../lib/useConsulta.ts'
 import pantalla from '../styles/pantalla.module.css'
@@ -32,6 +34,8 @@ export function InicioEntrenador() {
         </>
       )}
       {cargando && !error && <p className={pantalla.textoApagado}>Cargando…</p>}
+
+      <TurnosDeHoy />
 
       {panel && (
         <>
@@ -224,5 +228,63 @@ function MedicionesNuevas({ panel }: { panel: Panel }) {
         ))}
       </ul>
     </div>
+  )
+}
+
+// RF-71: los turnos de hoy, arriba de todo, que es lo primero que uno mira.
+function TurnosDeHoy() {
+  const { datos: turnos } = useConsulta(async () => {
+    const desde = new Date()
+    desde.setHours(0, 0, 0, 0)
+    const hasta = new Date(desde)
+    hasta.setDate(hasta.getDate() + 1)
+    return listarTurnos(desde, hasta)
+  }, [])
+
+  const activos = (turnos ?? []).filter((t) => t.estado !== 'cancelado')
+  const pendientes = activos.filter((t) => t.estado === 'pendiente').length
+
+  return (
+    <div className={pantalla.seccion}>
+      <div className={styles.titulo}>
+        <h2>Hoy en la agenda</h2>
+        <Link to="/agenda" className={styles.verTodo}>
+          Ver la agenda
+        </Link>
+      </div>
+      {turnos && activos.length === 0 && <p className={pantalla.textoApagado}>Hoy no tenés turnos.</p>}
+      {pendientes > 0 && (
+        <p className={pantalla.textoApagado}>
+          {pendientes === 1 ? 'Hay 1 reserva sin confirmar.' : `Hay ${pendientes} reservas sin confirmar.`}
+        </p>
+      )}
+      {activos.length > 0 && (
+        <ul className={pantalla.lista}>
+          {activos.map((t) => (
+            <li key={t.id}>
+              <Turno turno={t} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function Turno({ turno }: { turno: TurnoConCliente }) {
+  return (
+    <Link to="/agenda" className={pantalla.fila}>
+      <span className={pantalla.filaTexto}>
+        <span className={pantalla.filaNombre}>
+          {formatearRango(turno)} · {turno.cliente ? turno.cliente.nombre : 'Agenda bloqueada'}
+        </span>
+        <span className={pantalla.filaDetalle}>
+          {minutosDeTurno(turno)} min
+          {turno.lugar && ` · ${turno.lugar}`}
+          {turno.estado === 'pendiente' && ' · sin confirmar'}
+        </span>
+      </span>
+      <span aria-hidden="true">›</span>
+    </Link>
   )
 }

@@ -8,6 +8,9 @@ create role anon nologin;
 create role authenticated nologin;
 create role service_role nologin bypassrls;
 
+-- Supabase trae este esquema para las extensiones; acá lo creamos igual
+-- para que la migración que mueve btree_gist tenga dónde ponerla.
+create schema extensions;
 create schema auth;
 grant usage on schema auth to anon, authenticated, service_role;
 

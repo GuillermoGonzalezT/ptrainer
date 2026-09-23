@@ -13,6 +13,11 @@ const porCodigo: Record<string, string> = {
   access_denied: 'El link venció o ya se usó. Pedí uno nuevo.',
   flow_state_not_found: 'Ese link se abrió en otro navegador. Si era para confirmar tu cuenta, ya está confirmada: ingresá con tu contraseña.',
   bad_code_verifier: 'Ese link se abrió en otro navegador. Si era para confirmar tu cuenta, ya está confirmada: ingresá con tu contraseña.',
+  // Agenda (RF-80): dos turnos que se pisan. Lo frena la base con una
+  // restricción de exclusión, y el código que devuelve es siempre este.
+  '23P01': 'Ya tenés un turno en ese horario. Elegí otro, o cancelá el que está.',
+  // Una reserva fuera de las franjas, o cualquier fila que la RLS no acepta.
+  '42501': 'No tenés permiso para hacer eso.',
 }
 
 type ErrorConCodigo = { code?: string; message?: string }

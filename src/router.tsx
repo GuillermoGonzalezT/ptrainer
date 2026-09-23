@@ -15,6 +15,10 @@ import { Invitacion } from './pages/auth/Invitacion.tsx'
 import { NuevaContrasena } from './pages/auth/NuevaContrasena.tsx'
 import { Recuperar } from './pages/auth/Recuperar.tsx'
 import { Registrarse } from './pages/auth/Registrarse.tsx'
+import { Agenda } from './pages/agenda/Agenda.tsx'
+import { Disponibilidad } from './pages/agenda/Disponibilidad.tsx'
+import { FormularioTurno } from './pages/agenda/FormularioTurno.tsx'
+import { MisTurnos } from './pages/agenda/MisTurnos.tsx'
 import { FichaCliente } from './pages/clientes/FichaCliente.tsx'
 import { FormularioCliente } from './pages/clientes/FormularioCliente.tsx'
 import { ListaClientes } from './pages/clientes/ListaClientes.tsx'
@@ -103,6 +107,10 @@ export const router = createHashRouter([
           { path: 'programas/nuevo', element: <EditorPrograma /> },
           { path: 'programas/:id', element: <EditorPrograma /> },
           { path: 'programas/:id/asignar', element: <AsignarPrograma /> },
+          { path: 'agenda', element: <Agenda /> },
+          { path: 'agenda/nuevo', element: <FormularioTurno /> },
+          { path: 'agenda/disponibilidad', element: <Disponibilidad /> },
+          { path: 'agenda/:id', element: <FormularioTurno /> },
           { path: 'metricas', element: <ListaMetricas /> },
           { path: 'metricas/nueva', element: <FormularioMetrica /> },
           { path: 'metricas/:id/editar', element: <FormularioMetrica /> },
@@ -114,6 +122,7 @@ export const router = createHashRouter([
         children: [
           { path: 'historial', element: <Historial /> },
           { path: 'progreso', element: <Progreso /> },
+          { path: 'turnos', element: <MisTurnos /> },
         ],
       },
       { path: '*', element: <NoEncontrada /> },

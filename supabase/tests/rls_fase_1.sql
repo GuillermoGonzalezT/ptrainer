@@ -481,6 +481,76 @@ select prueba.falla(format('select public.asignar_programa(%L, array[%L]::uuid[]
   'programas: no se asigna un programa sin ninguna rutina');
 delete from public.programas where id = :'prog_vacio';
 
+-- Agenda: disponibilidad y turnos (RF-80, RF-81) ------------------------------------
+
+-- Lunes y miércoles de 8 a 12, en la zona del entrenador.
+insert into public.disponibilidad (dia, desde, hasta) values (1, '08:00', '12:00'), (3, '08:00', '12:00');
+select prueba.ok((select entrenador_id from public.disponibilidad limit 1) = :'E1',
+  'agenda: el entrenador_id de la franja sale de la sesión');
+select prueba.falla($q$insert into public.disponibilidad (dia, desde, hasta) values (1, '12:00', '08:00')$q$,
+  'agenda: una franja no puede terminar antes de empezar');
+
+-- El lunes que viene a las 9, hora de Montevideo.
+select (date_trunc('week', current_date + interval '7 days') + interval '9 hours')
+  at time zone 'America/Montevideo' as lunes9 \gset
+select (date_trunc('week', current_date + interval '7 days') + interval '13 hours')
+  at time zone 'America/Montevideo' as lunes13 \gset
+
+insert into public.turnos (cliente_id, inicia_en, termina_en, estado, lugar)
+  values (:'c1', :'lunes9', :'lunes9'::timestamptz + interval '1 hour', 'confirmado', 'Parque Rodó')
+  returning id as turno1 \gset
+select prueba.ok((select pedido_por from public.turnos where id = :'turno1') = :'E1',
+  'agenda: queda anotado quién pidió el turno');
+
+select prueba.falla(format(
+  $q$insert into public.turnos (cliente_id, inicia_en, termina_en, estado) values (%L, %L, %L, 'confirmado')$q$,
+  :'c2', (:'lunes9'::timestamptz + interval '30 minutes')::text,
+  (:'lunes9'::timestamptz + interval '90 minutes')::text),
+  'agenda: dos turnos del mismo entrenador no se pisan');
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.turnos (cliente_id, inicia_en, termina_en, estado) values (%L, %L, %L, 'confirmado')$q$,
+  :'c2', (:'lunes9'::timestamptz + interval '1 hour')::text,
+  (:'lunes9'::timestamptz + interval '2 hours')::text)) = 1,
+  'agenda: pegado al anterior sí entra');
+delete from public.turnos where cliente_id = :'c2';
+
+select prueba.falla(format(
+  $q$insert into public.turnos (cliente_id, inicia_en, termina_en, estado) values (%L, %L, %L, 'confirmado')$q$,
+  :'c2', :'lunes13', (:'lunes13'::timestamptz + interval '12 hours')::text),
+  'agenda: un turno de más de 8 horas no se guarda');
+
+-- Fuera de la franja el entrenador igual puede agendar: la franja es para que
+-- reserve el cliente, no un corralito para el entrenador.
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.turnos (cliente_id, inicia_en, termina_en, estado) values (%L, %L, %L, 'confirmado')$q$,
+  :'c1', :'lunes13', (:'lunes13'::timestamptz + interval '1 hour')::text)) = 1,
+  'agenda: el entrenador agenda fuera de su disponibilidad');
+delete from public.turnos where inicia_en = :'lunes13';
+
+-- Un bloqueo de agenda no tiene cliente y no puede quedar pendiente.
+select prueba.falla(format(
+  $q$insert into public.turnos (inicia_en, termina_en, estado) values (%L, %L, 'pendiente')$q$,
+  (:'lunes9'::timestamptz + interval '3 hours')::text,
+  (:'lunes9'::timestamptz + interval '4 hours')::text),
+  'agenda: un bloqueo sin cliente no puede estar pendiente');
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.turnos (inicia_en, termina_en, estado) values (%L, %L, 'confirmado')$q$,
+  (:'lunes9'::timestamptz + interval '3 hours')::text,
+  (:'lunes9'::timestamptz + interval '4 hours')::text)) = 1,
+  'agenda: un bloqueo sin cliente sí se guarda confirmado');
+
+-- La franja, en la hora local del entrenador.
+select prueba.ok(privado.hay_disponibilidad(:'E1', :'lunes9', :'lunes9'::timestamptz + interval '1 hour'),
+  'disponibilidad: el lunes de 9 a 10 cae en la franja de 8 a 12');
+select prueba.ok(not privado.hay_disponibilidad(:'E1', :'lunes13', :'lunes13'::timestamptz + interval '1 hour'),
+  'disponibilidad: el lunes de 13 a 14 queda afuera');
+select prueba.ok(not privado.hay_disponibilidad(
+  :'E1', :'lunes9'::timestamptz + interval '2 hours', :'lunes9'::timestamptz + interval '5 hours'),
+  'disponibilidad: un turno que se pasa del final de la franja no entra');
+select prueba.ok(not privado.hay_disponibilidad(
+  :'E1', :'lunes9'::timestamptz + interval '1 day', :'lunes9'::timestamptz + interval '1 day 1 hour'),
+  'disponibilidad: el martes no hay franja');
+
 -- Lo que ve el cliente del programa -------------------------------------------------
 
 reset role;
@@ -495,6 +565,50 @@ select prueba.ok(prueba.filas('select 1 from public.programa_rutinas') = 0,
   'programas: el cliente no ve cómo está armado el programa');
 select prueba.ok(prueba.afectadas('delete from public.programa_asignaciones') = 0,
   'programas: el cliente no borra su asignación');
+
+-- La agenda, desde el cliente (RF-81) ------------------------------------------------
+
+select prueba.ok(prueba.filas('select 1 from public.turnos') = 1,
+  'agenda: el cliente ve su turno y no el bloqueo del entrenador');
+select prueba.ok(prueba.filas('select 1 from public.disponibilidad') = 2,
+  'agenda: el cliente ve las franjas de su entrenador, para saber qué pedir');
+
+-- Reserva dentro de la franja y en un hueco libre: entra, y pendiente.
+select prueba.ok(prueba.afectadas(format(
+  $q$insert into public.turnos (entrenador_id, cliente_id, inicia_en, termina_en) values (%L, %L, %L, %L)$q$,
+  :'E1', :'c1', (:'lunes9'::timestamptz + interval '1 hour')::text,
+  (:'lunes9'::timestamptz + interval '2 hours')::text)) = 1,
+  'agenda: el cliente reserva dentro de una franja');
+select prueba.ok((
+  select estado from public.turnos where cliente_id = :'c1' and inicia_en = :'lunes9'::timestamptz + interval '1 hour'
+) = 'pendiente', 'agenda: la reserva del cliente queda pendiente');
+
+select prueba.falla(format(
+  $q$insert into public.turnos (entrenador_id, cliente_id, inicia_en, termina_en) values (%L, %L, %L, %L)$q$,
+  :'E1', :'c1', :'lunes13', (:'lunes13'::timestamptz + interval '1 hour')::text),
+  'agenda: el cliente no reserva fuera de las franjas');
+select prueba.falla(format(
+  $q$insert into public.turnos (entrenador_id, cliente_id, inicia_en, termina_en, estado) values (%L, %L, %L, %L, 'confirmado')$q$,
+  :'E1', :'c1', (:'lunes9'::timestamptz + interval '2 hours')::text,
+  (:'lunes9'::timestamptz + interval '3 hours')::text),
+  'agenda: el cliente no se confirma el turno a sí mismo');
+select prueba.falla(format(
+  $q$insert into public.turnos (entrenador_id, cliente_id, inicia_en, termina_en) values (%L, %L, %L, %L)$q$,
+  :'E1', :'c2', (:'lunes9'::timestamptz + interval '2 hours')::text,
+  (:'lunes9'::timestamptz + interval '3 hours')::text),
+  'agenda: el cliente no reserva a nombre de otro');
+
+-- De su propio turno solo puede cancelarlo.
+select prueba.ok(prueba.afectadas(format(
+  $q$update public.turnos set estado = 'cancelado' where id = %L$q$, :'turno1')) = 1,
+  'agenda: el cliente cancela su turno');
+select prueba.falla(format(
+  $q$update public.turnos set estado = 'confirmado' where cliente_id = %L and estado = 'pendiente'$q$, :'c1'),
+  'agenda: el cliente no confirma su turno');
+select prueba.ok(prueba.afectadas(format(
+  $q$update public.turnos set inicia_en = inicia_en + interval '1 day' where id = %L$q$, :'turno1')) = 0,
+  'agenda: el cliente no mueve un turno ya cancelado');
+select prueba.ok(prueba.afectadas('delete from public.turnos') = 0, 'agenda: el cliente no borra turnos');
 
 reset role;
 select prueba.como(:'U2');
